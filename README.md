@@ -9,9 +9,9 @@ The easiest way to install and run the **Companion** is by loading the associate
 ## Structure
 
 Each post and pre-processing notebook is associated with a Python file. We have chosen this structure to give you the transparency and opportunity to:
-1. clearly understand the creation and format of Badlands input file,
-2. perform some basic quantitative analyses of Badlands output file,
-3. easily design your own notebook and further improve this workflow.
+* clearly understand the creation and format of Badlands input file,
+* perform some basic quantitative analyses of Badlands output file,
+* easily design your own notebook and further improve this workflow.
  
 If you have any suggestions or if you would like to share your own Badlands template with others, feel free to contact us, we will be happy to integrate your own workflow here.
 
