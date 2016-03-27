@@ -36,7 +36,7 @@ The pre-processing notebooks will help you to create:
 **Hydrometrics** refers to quantitative description and analysis of water surface. We will show how you can extract a particular catchment from a given model and compute for this particular catchment a series of paramters such as:
 - river profile evolution based on main stream elevation and distance to outlet,
 - Peclet number distribution which evaluates the dominant processes shaping the landscape,
-- $\chi$ parameter that characterizes rivers system evolution based on terrain steepness and the arrangement of tributaries,
+- Chi parameter that characterizes rivers system evolution based on terrain steepness and the arrangement of tributaries,
 discharge profiles
 
 ### Stratigraphic analyses
