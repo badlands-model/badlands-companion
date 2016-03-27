@@ -24,4 +24,21 @@ The pre-processing notebooks will help you to create:
  
 ## Post-processing
 
+### Morpho & Hydrometrics analyses
+
+**Morphometrics** refers to quantitative description and analysis of the produced Badlands landforms which could be applied to a particular kind of landform or to drainage basins and large regions. The following suite of geomorphic attributes could be extracted:
+- gradient: magnitude of maximum gradient
+- horizontal curvature describes convergent or divergent fluxes
+- vertical curvature: positive values describe convex profile curvature, negative values concave profile.
+- aspect: direction of maximum gradient
+- discharge: it relates to the drainage area
+
+**Hydrometrics** refers to quantitative description and analysis of water surface. We will show how you can extract a particular catchment from a given model and compute for this particular catchment a series of paramters such as:
+- river profile evolution based on main stream elevation and distance to outlet,
+- Peclet number distribution which evaluates the dominant processes shaping the landscape,
+- $\chi$ parameter that characterizes rivers system evolution based on terrain steepness and the arrangement of tributaries,
+discharge profiles
+
+### Stratigraphic analyses
+
 TODO
