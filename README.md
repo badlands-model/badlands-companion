@@ -19,7 +19,7 @@ If you have any suggestions or if you would like to share your own Badlands temp
 
 The pre-processing notebooks will help you to create:
 + surface grids for generic (simple geometrical model) and real (based on etopo1) topographic/bathymetric dataset,
-+ sea level fluctuations file (using Haq curve) to look at the impact of sea-level change on landscape dynamics,
++ sea level fluctuations file (using Haq curve or building your own one) to look at the impact of sea-level change on landscape dynamics,
 + horizontal (uplift/subsidence) displacement maps to study landscape response to tectonic forces. 
  
 ## Post-processing
