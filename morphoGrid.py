@@ -48,9 +48,6 @@ class morphoGrid:
         variable: ncpus
             Number of CPUs used to run the simulation.
 
-        variable: ncpus
-            Number of CPUs used to run the simulation.
-
         variable: bbox
             Bounding box extent SW corner and NE corner.
 
