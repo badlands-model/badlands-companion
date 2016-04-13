@@ -18,7 +18,7 @@ from scipy.interpolate import RegularGridInterpolator
 
 class resizeInput:
     """
-    This class is used to quickly build higher resolution input data file from preexisting ones.
+    This class is used to quickly build higher resolution input data file from pre-existing ones.
 
     Parameters
     ----------
@@ -26,7 +26,16 @@ class resizeInput:
         Required space interval for the new grid (in metres).
     """
     def __init__(self, requestedSpacing = 100):
+        """
+        Initialization function which takes the requested resolution to use for regridding.
+        
+        Parameters
+        ----------
 
+        variable: requestedSpacing
+            Regridding resolution in metres.
+        """
+        
         self.res = requestedSpacing
 
         self.X = None
