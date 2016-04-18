@@ -140,11 +140,11 @@ class morphoGrid:
         XY = np.column_stack((x,y))
         tree = cKDTree(XY)
         distances, indices = tree.query(xyi, k=3)
-        z_vals = z[indices]
+        z_vals = z[indices][:,:,0]
         zi = np.average(z_vals,weights=(1./distances), axis=1)
-        d_vals = d[indices]
+        d_vals = d[indices][:,:,0]
         di = np.average(d_vals,weights=(1./distances), axis=1)
-        c_vals = c[indices]
+        c_vals = c[indices][:,:,0]
         ci = np.average(c_vals,weights=(1./distances), axis=1)
 
         onIDs = np.where(distances[:,0] == 0)[0]
