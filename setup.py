@@ -8,7 +8,7 @@ setup.py for pyBadlands Companion
 
 setup(
     name="pybadlands_companion",
-    version="0.1",
+    version="1.0",
     author="Tristan Salles",
     author_email="tristan.salles@sydney.edu.au",
     description=("Pre and post processing scripts for pyBadlands"),
