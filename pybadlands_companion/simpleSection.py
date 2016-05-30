@@ -16,6 +16,7 @@ import h5py
 import errno
 import numpy as np
 import pandas as pd
+import colorlover as cl
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree
 import xml.etree.ElementTree as ETO
@@ -28,7 +29,6 @@ plotly.offline.init_notebook_mode()
 
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
-
 
 def viewSea(seafile):
     """
@@ -78,6 +78,10 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
         Title of the graph.
     """
     
+    colors = cl.scales['9']['div']['RdYlBu']
+    hist = cl.interp( colors, layNb ) 
+    colorrgb = cl.to_rgb( hist )
+    
     nlay = layNb - 1
     
     lay = {}
@@ -95,37 +99,24 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
     
     trace = {}
     data = []
-    
-    # Bottom line
-    trace[0] = Scatter(
-        x=cs[nlay].dist,
-        y=cs[nlay].top - cs[nlay].depo,
-        mode='lines',
-        name="base",
-        line=dict(
-            shape='line',
-            width = linesize,
-            color = 'rgb(102, 102, 102)'
-        )
-    )   
-    data.append(trace[0])
         
     for i in range(1,nlay):
-        trace[i] = Scatter(
+        trace[i-1] = Scatter(
             x=cs[i].dist,
             y=cs[i].ntop,
             mode='lines',
             name="layer "+str(i),
             line=dict(
                 shape='line',
-                width = linesize-1 #,
+                width = linesize-1, 
+                color = colorrgb[i-1] #,
                 #dash = 'dash'
             )
         )
-        data.append(trace[i])
+        data.append(trace[i-1])
     
     # Top line
-    trace[nlay+1] = Scatter(
+    trace[nlay] = Scatter(
         x=cs[nlay].dist,
         y=cs[nlay].top,
         mode='lines',
@@ -136,6 +127,20 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
             color = 'rgb(102, 102, 102)'
         )
     )
+    data.append(trace[nlay])
+    
+    # Bottom line
+    trace[nlay+1] = Scatter(
+        x=cs[nlay].dist,
+        y=cs[nlay].top - cs[nlay].depo,
+        mode='lines',
+        name="base",
+        line=dict(
+            shape='line',
+            width = linesize,
+            color = 'rgb(102, 102, 102)'
+        )
+    )   
     data.append(trace[nlay+1])
         
     layout = dict(
