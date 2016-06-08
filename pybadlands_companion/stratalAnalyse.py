@@ -22,8 +22,10 @@ from scipy.spatial import cKDTree
 import xml.etree.ElementTree as ETO
 import scipy.ndimage.filters as filters
 from scipy.interpolate import RectBivariateSpline
+from scipy.ndimage.filters import gaussian_filter
 
 import plotly
+from plotly import tools
 from plotly.graph_objs import *
 plotly.offline.init_notebook_mode()
 
@@ -142,6 +144,7 @@ def viewSection(width = 800, height = 400, cs = None, rangeX = None, rangeY = No
     if rangeX is not None and rangeY is not None:
         layout = dict(
                 title=title,
+                font=dict(size=10),
                 width=width,
                 height=height,
                 showlegend = False,
@@ -161,6 +164,7 @@ def viewSection(width = 800, height = 400, cs = None, rangeX = None, rangeY = No
     else:
         layout = dict(
                 title=title,
+                font=dict(size=10),
                 width=width,
                 height=height
         )  
@@ -252,6 +256,7 @@ def viewSectionST(width = 800, height = 400, cs = None, colors=None, rangeX = No
     if rangeX is not None and rangeY is not None:
         layout = dict(
                 title=title,
+                font=dict(size=10),
                 width=width,
                 height=height,
                 showlegend = False,
@@ -271,9 +276,101 @@ def viewSectionST(width = 800, height = 400, cs = None, colors=None, rangeX = No
     else:
         layout = dict(
                 title=title,
+                font=dict(size=10),
                 width=width,
                 height=height
         )  
+    fig = Figure(data=data, layout=layout)
+    plotly.offline.iplot(fig)
+
+    return
+
+def viewWheeler(width = 800, height = 400, cs = None, time = None, colors = None, 
+                    rangeE=None, rangeX = None, rangeY = None, contourdx = 50,
+                    title = 'Wheeler diagram'):
+    """
+    Plot wheeler diagram colored by deposition environment on a graph.
+    Parameters
+    ----------
+    variable: width
+        Figure width.
+    variable: height
+        Figure height.
+    variable: cs
+        Cross-sections dataset.
+    variable: time
+        Simulation time array dataset.
+    variable: colors
+        Depositional environments color scale.
+    variable: rangeE
+        Depositional environments extent.
+    variable: rangeX, rangeY
+        Extent of the cross section plot.
+    variable: contourdx
+        Distance between 2 contours.
+    variable: title
+        Title of the graph.
+    """
+    
+    smoothelev = gaussian_filter(cs.secElev, sigma=2)
+    emin = rangeE[0][0]
+    emax = rangeE[0][1]
+    for k in range(len(colors)):
+        tmp1 = rangeE[k][0]
+        tmp2 = rangeE[k][1]
+        emin = min(emin,tmp1)
+        emax = max(emax,tmp2)
+    colorscale = []
+    
+    for k in range(len(colors)):
+        tmp = (rangeE[k][0]-emin)/(emax-emin)
+        list = [tmp,colors[k]]
+        colorscale.append(list)
+    colorscale.append([1., 'rgb(250,250,250)'])
+
+    data = Data([
+        Contour(
+            x=cs.dist,
+            y=time,
+            z=smoothelev,
+            line=dict(smoothing=0.8,color='black' ,width=0.5),
+            colorscale=colorscale,
+            autocontour=False,
+            contours=dict(
+                start=emin,
+                end=emax,
+                size=contourdx,
+            ),
+            colorbar=dict(
+                thickness=25,
+                thicknessmode='pixels',
+                title='Elevation [m]',
+                titleside='right',
+                len=0.9,
+                lenmode='fraction',
+                outlinewidth=0
+            )
+        )
+    ])
+
+    layout = dict(title=title,
+                font=dict(size=10),
+                width=width,
+                height=height,
+                showlegend = False,
+                xaxis=dict(title='distance [m]',
+                            range=rangeX,
+                            ticks='outside',
+                            zeroline=False,
+                            showline=True,
+                            mirror='ticks'),     
+                yaxis=dict(title='Time [year]',
+                            range=rangeY,
+                            ticks='outside',
+                            zeroline=False,
+                            showline=True,
+                            mirror='ticks')
+    )
     fig = Figure(data=data, layout=layout)
     plotly.offline.iplot(fig)
 
