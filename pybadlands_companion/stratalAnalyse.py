@@ -57,7 +57,7 @@ def viewSea(seafile):
     plt.grid(True)
     plt.xlabel('Sea level (m)',fontsize=11)
     plt.ylabel('Time (years)',fontsize=11)
-    
+
     return SLtime,sealevel
 
 def viewSection(width = 800, height = 400, cs = None, rangeX = None, rangeY = None,
@@ -81,24 +81,24 @@ def viewSection(width = 800, height = 400, cs = None, rangeX = None, rangeY = No
     """
     nlay = len(cs.secDep)
     colors = cl.scales['9']['div']['BrBG']
-    hist = cl.interp( colors, nlay ) 
+    hist = cl.interp( colors, nlay )
     colorrgb = cl.to_rgb( hist )
-    
+
     trace = {}
     data = []
-             
+
     trace[0] = Scatter(
         x=cs.dist,
         y=cs.secDep[0],
         mode='lines',
         line=dict(
             shape='line',
-            width = linesize+2, 
+            width = linesize+2,
             color = 'rgb(0, 0, 0)'
         )
     )
     data.append(trace[0])
-    
+
     for i in range(1,nlay-1):
         trace[i] = Scatter(
             x=cs.dist,
@@ -106,41 +106,41 @@ def viewSection(width = 800, height = 400, cs = None, rangeX = None, rangeY = No
             mode='lines',
             line=dict(
                 shape='line',
-                width = linesize, 
-                color = 'rgb(0,0,0)' 
+                width = linesize,
+                color = 'rgb(0,0,0)'
             ),
             opacity=0.5,
             fill='tonexty',
             fillcolor=colorrgb[i]
         )
         data.append(trace[i])
-    
+
     trace[nlay-1] = Scatter(
         x=cs.dist,
         y=cs.secDep[nlay-1],
         mode='lines',
         line=dict(
             shape='line',
-            width = linesize+2, 
+            width = linesize+2,
             color = 'rgb(0, 0, 0)'
         ),
         fill='tonexty',
         fillcolor=colorrgb[nlay-1]
     )
     data.append(trace[nlay-1])
-             
+
     trace[nlay] = Scatter(
         x=cs.dist,
         y=cs.secDep[0],
         mode='lines',
         line=dict(
             shape='line',
-            width = linesize+2, 
+            width = linesize+2,
             color = 'rgb(0, 0, 0)'
         )
     )
     data.append(trace[nlay])
-    
+
     if rangeX is not None and rangeY is not None:
         layout = dict(
                 title=title,
@@ -153,7 +153,7 @@ def viewSection(width = 800, height = 400, cs = None, rangeX = None, rangeY = No
                             ticks='outside',
                             zeroline=False,
                             showline=True,
-                            mirror='ticks'),     
+                            mirror='ticks'),
                 yaxis=dict(title='elevation [m]',
                             range=rangeY,
                             ticks='outside',
@@ -167,7 +167,7 @@ def viewSection(width = 800, height = 400, cs = None, rangeX = None, rangeY = No
                 font=dict(size=10),
                 width=width,
                 height=height
-        )  
+        )
     fig = Figure(data=data, layout=layout)
     plotly.offline.iplot(fig)
 
@@ -195,22 +195,22 @@ def viewSectionST(width = 800, height = 400, cs = None, colors=None, rangeX = No
         Title of the graph.
     """
     nlay = len(cs.secDep)
-    
+
     trace = {}
     data = []
-             
+
     trace[0] = Scatter(
         x=cs.dist,
         y=cs.secDep[0],
         mode='lines',
         line=dict(
             shape='line',
-            width = linesize+2, 
+            width = linesize+2,
             color = 'rgb(0, 0, 0)'
         )
     )
     data.append(trace[0])
-    
+
     for i in range(1,nlay-1):
         trace[i] = Scatter(
             x=cs.dist,
@@ -218,41 +218,41 @@ def viewSectionST(width = 800, height = 400, cs = None, colors=None, rangeX = No
             mode='lines',
             line=dict(
                 shape='line',
-                width = linesize, 
-                color = 'rgb(0,0,0)' 
+                width = linesize,
+                color = 'rgb(0,0,0)'
             ),
             opacity=0.5,
             fill='tonexty',
             fillcolor=colors[i]
         )
         data.append(trace[i])
-    
+
     trace[nlay-1] = Scatter(
         x=cs.dist,
         y=cs.secDep[nlay-1],
         mode='lines',
         line=dict(
             shape='line',
-            width = linesize+2, 
+            width = linesize+2,
             color = 'rgb(0, 0, 0)'
         ),
         fill='tonexty',
         fillcolor=colors[nlay-1]
     )
     data.append(trace[nlay-1])
-             
+
     trace[nlay] = Scatter(
         x=cs.dist,
         y=cs.secDep[0],
         mode='lines',
         line=dict(
             shape='line',
-            width = linesize+2, 
+            width = linesize+2,
             color = 'rgb(0, 0, 0)'
         )
     )
     data.append(trace[nlay])
-    
+
     if rangeX is not None and rangeY is not None:
         layout = dict(
                 title=title,
@@ -265,7 +265,7 @@ def viewSectionST(width = 800, height = 400, cs = None, colors=None, rangeX = No
                             ticks='outside',
                             zeroline=False,
                             showline=True,
-                            mirror='ticks'),     
+                            mirror='ticks'),
                 yaxis=dict(title='elevation [m]',
                             range=rangeY,
                             ticks='outside',
@@ -279,13 +279,13 @@ def viewSectionST(width = 800, height = 400, cs = None, colors=None, rangeX = No
                 font=dict(size=10),
                 width=width,
                 height=height
-        )  
+        )
     fig = Figure(data=data, layout=layout)
     plotly.offline.iplot(fig)
 
     return
 
-def viewWheeler(width = 800, height = 400, cs = None, time = None, colors = None, 
+def viewWheeler(width = 800, height = 400, cs = None, time = None, colors = None,
                     rangeE=None, rangeX = None, rangeY = None, contourdx = 50,
                     title = 'Wheeler diagram'):
     """
@@ -311,7 +311,7 @@ def viewWheeler(width = 800, height = 400, cs = None, time = None, colors = None
     variable: title
         Title of the graph.
     """
-    
+
     smoothelev = gaussian_filter(cs.secElev, sigma=2)
     emin = rangeE[0][0]
     emax = rangeE[0][1]
@@ -321,7 +321,7 @@ def viewWheeler(width = 800, height = 400, cs = None, time = None, colors = None
         emin = min(emin,tmp1)
         emax = max(emax,tmp2)
     colorscale = []
-    
+
     for k in range(len(colors)):
         tmp = (rangeE[k][0]-emin)/(emax-emin)
         list = [tmp,colors[k]]
@@ -363,7 +363,7 @@ def viewWheeler(width = 800, height = 400, cs = None, time = None, colors = None
                             ticks='outside',
                             zeroline=False,
                             showline=True,
-                            mirror='ticks'),     
+                            mirror='ticks'),
                 yaxis=dict(title='Time [year]',
                             range=rangeY,
                             ticks='outside',
@@ -385,7 +385,7 @@ class stratalSection:
         """
         Initialization function which takes the folder path to Badlands outputs
         and the number of CPUs used to run the simulation.
-        
+
         Parameters
         ----------
         variable : folder
@@ -414,7 +414,7 @@ class stratalSection:
         self.nz = None
         self.dep = None
         self.th = None
-        self.elev = None  
+        self.elev = None
         self.xsec = None
         self.ysec = None
         self.secTh = []
@@ -443,7 +443,7 @@ class stratalSection:
                 dep = layDepth
                 elev = layElev
                 th = layThick
-                
+
         self.dx = x[1]-x[0]
         self.x = x
         self.y = y
@@ -455,7 +455,7 @@ class stratalSection:
         self.dep = dep.reshape((self.nx,self.ny,self.nz))
         self.elev = elev.reshape((self.nx,self.ny,self.nz))
         self.th = th.reshape((self.nx,self.ny,self.nz))
-        
+
         return
 
     def _cross_section(self, xo, yo, xm, ym, pts):
@@ -477,9 +477,9 @@ class stratalSection:
             xsec = np.linspace(xo, xm, pts)
             ysec = a * xsec + b
 
-        return xsec,ysec    
-    
-    def buildSection(self, xo = None, yo = None, xm = None, ym = None, 
+        return xsec,ysec
+
+    def buildSection(self, xo = None, yo = None, xm = None, ym = None,
                     pts = 100, gfilter = 5):
         """
         Extract a slice from the 3D data set and compute the stratigraphic layers.
@@ -494,7 +494,14 @@ class stratalSection:
         variable: gfilter
             Gaussian smoothing filter
         """
-        
+
+        tmpX = xo
+        xo = yo
+        yo = tmpX
+        tmpX = xm
+        xm = ym
+        ym = tmpX
+
         if xm > self.x.max():
             xm = self.x.max()
 
@@ -508,7 +515,7 @@ class stratalSection:
             yo = self.y.min()
 
         xsec, ysec = self._cross_section(xo, yo, xm, ym, pts)
-        self.dist = np.sqrt(( xsec - xo )**2 + ( ysec - yo )**2)   
+        self.dist = np.sqrt(( xsec - xo )**2 + ( ysec - yo )**2)
         self.xsec = xsec
         self.ysec = ysec
         for k in range(self.nz):
@@ -530,5 +537,5 @@ class stratalSection:
             data2 = rect_B_spline2.ev(xsec, ysec)
             secDep = filters.gaussian_filter1d(data2,sigma=gfilter)
             self.secDep.append(secDep)
-            
+
         return
