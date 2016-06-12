@@ -423,17 +423,19 @@ class stratalSection:
 
         return
 
-    def loadStratigraphy(self, timestep=0):
+    def loadStratigraphy(self, regionID=0, timestep=0):
         """
         Read the HDF5 file for a given time step.
         Parameters
         ----------
+        variable : regionID
+            Stratigraphic region to load.
         variable : timestep
             Time step to load.
         """
 
         for i in range(0, self.ncpus):
-            df = h5py.File('%s/sed.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
+            df = h5py.File('%s/sed.region%s.time%s.p%s.hdf5'%(self.folder, regionID, timestep, i), 'r')
             coords = np.array((df['/coords']))
             layDepth = np.array((df['/layDepth']))
             layElev = np.array((df['/layElev']))
@@ -452,9 +454,9 @@ class stratalSection:
         self.nz = dep.shape[1]
         self.xi = np.linspace(x.min(), x.max(), self.nx)
         self.yi = np.linspace(y.min(), y.max(), self.ny)
-        self.dep = dep.reshape((self.nx,self.ny,self.nz))
-        self.elev = elev.reshape((self.nx,self.ny,self.nz))
-        self.th = th.reshape((self.nx,self.ny,self.nz))
+        self.dep = dep.reshape((self.ny,self.nx,self.nz))
+        self.elev = elev.reshape((self.ny,self.nx,self.nz))
+        self.th = th.reshape((self.ny,self.nx,self.nz))
 
         return
 
@@ -495,13 +497,6 @@ class stratalSection:
             Gaussian smoothing filter
         """
 
-        tmpX = xo
-        xo = yo
-        yo = tmpX
-        tmpX = xm
-        xm = ym
-        ym = tmpX
-
         if xm > self.x.max():
             xm = self.x.max()
 
@@ -520,21 +515,21 @@ class stratalSection:
         self.ysec = ysec
         for k in range(self.nz):
             # thick
-            rect_B_spline = RectBivariateSpline(self.xi, self.yi, self.th[:,:,k])
-            data = rect_B_spline.ev(xsec, ysec)
+            rect_B_spline = RectBivariateSpline(self.yi, self.xi, self.th[:,:,k])
+            data = rect_B_spline.ev(ysec, xsec)
             secTh = filters.gaussian_filter1d(data,sigma=gfilter)
             secTh[secTh < 0] = 0
             self.secTh.append(secTh)
 
             # Elev
-            rect_B_spline1 = RectBivariateSpline(self.xi, self.yi, self.elev[:,:,k])
-            data1 = rect_B_spline1.ev(xsec, ysec)
+            rect_B_spline1 = RectBivariateSpline(self.yi, self.xi, self.elev[:,:,k])
+            data1 = rect_B_spline1.ev(ysec, xsec)
             secElev = filters.gaussian_filter1d(data1,sigma=gfilter)
             self.secElev.append(secElev)
 
             # Depth
-            rect_B_spline2 = RectBivariateSpline(self.xi, self.yi, self.dep[:,:,k])
-            data2 = rect_B_spline2.ev(xsec, ysec)
+            rect_B_spline2 = RectBivariateSpline(self.yi, self.xi, self.dep[:,:,k])
+            data2 = rect_B_spline2.ev(ysec, xsec)
             secDep = filters.gaussian_filter1d(data2,sigma=gfilter)
             self.secDep.append(secDep)
 
