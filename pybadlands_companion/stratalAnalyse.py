@@ -533,4 +533,11 @@ class stratalSection:
             secDep = filters.gaussian_filter1d(data2,sigma=gfilter)
             self.secDep.append(secDep)
 
+        # Ensure the spline interpolation does not create underlying layers above upper ones
+        topsec = self.secDep[self.nz-1]
+        for k in range(self.nz-2,-1,-1):
+            secDep = self.secDep[k]
+            self.secDep[k] = np.minimum(secDep, topsec)
+            topsec = self.secDep[k]
+
         return
