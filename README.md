@@ -42,4 +42,10 @@ The pre-processing notebooks will help you to create:
 
 ### Stratigraphic analyses
 
-TODO
+When the stratigraphic structure is turned on in **pyBadlands** it is possible to:
+
+- extract a cross-section and plot stratographic layers with systems tracts as well as wheeler diagram
+- create for any given time step a 3D stratal mesh -- VTK structured grid that could be open with either Paraview or Visit.
+
+
+
