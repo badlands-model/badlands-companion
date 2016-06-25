@@ -185,7 +185,7 @@ class resizeInput:
         dYi = RGI_function2((self.xi.flatten(),self.yi.flatten()))
         dZi = RGI_function3((self.xi.flatten(),self.yi.flatten()))
 
-        df = pandas.DataFrame({'dX':self.dXi.flatten(),'dY':self.dYi.flatten(),'dZ':dZi.flatten()})
+        df = pandas.DataFrame({'dX':dXi.flatten(),'dY':dYi.flatten(),'dZ':dZi.flatten()})
         df.to_csv(str(outDEM),columns=['dX', 'dY', 'dZ'], sep=' ', index=False ,header=0)
 
         return
