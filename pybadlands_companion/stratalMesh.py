@@ -77,7 +77,7 @@ class stratalMesh:
         """
 
         self.regionID = regionID
-        self.timestep = 0
+        self.timestep = timestep
 
         for i in range(0, self.ncpus):
             df = h5py.File('%s/sed.region%s.time%s.p%s.hdf5'%(self.folder, regionID, timestep, i), 'r')
