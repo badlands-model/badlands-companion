@@ -648,3 +648,63 @@ class hydroGrid:
         plotly.offline.iplot(fig)
 
         return
+
+    def timeProfiles(self, pData = None, pDist = None, width = 800, height = 400, linesize = 2,
+                    title = 'Profile evolution with time'):
+        """
+        Plot profile mean, max and min.
+
+        Parameters
+        ----------
+
+        variable: pData
+            Dataset to plot along Y axis.
+            
+        variable: pDist
+            Dataset to plot along X axis.
+            
+        variable: width
+            Figure width.
+
+        variable: height
+            Figure height.
+
+        variable: color
+            Color scale.
+
+        variable: linesize, markersize
+            Requested size for the line and markers.
+
+        variable: title
+            Title of the graph.
+            
+        Return:
+        
+        variable: minZ, meanZ, maxZ
+            Y values for the profile (minZ, meanZ, maxZ)
+        """
+
+        trace = {}
+        data = []
+    
+        for i in range(0,len(pData)):
+            trace[i] = Scatter(
+                x=pDist[i],
+                y=pData[i],
+                mode='lines',
+                line=dict(
+                    shape='spline',
+                    width = linesize,
+                    #color = color
+                ),
+            )
+            data.append(trace[i])
+        
+        layout = dict(
+            title=title,
+            width=width,
+            height=height
+        )
+        
+        fig = Figure(data=data, layout=layout)
+        plotly.offline.iplot(fig)

@@ -390,6 +390,263 @@ class morphoGrid:
 
         return
 
+    def extractSection(self, xo = None, yo = None, xm = None, ym = None, pts = 100, vData = None,
+                    view = True, width = 800, height = 400, color = 'green', linesize = 3,
+                    markersize = 5, title = 'Cross section'):
+        """
+        Extract a slice from the 3D data set and plot required data on a graph.
+
+        Parameters
+        ----------
+
+        variable: xo, yo
+            Lower X,Y coordinates of the cross-section
+
+        variable: xm, ym
+            Upper X,Y coordinates of the cross-section
+
+        variable: pts
+            Number of points to discretise the cross-section
+
+        variable: vData
+            Dataset to plot.
+
+        variable: view
+            Show the section plot.
+            
+        variable: width
+            Figure width.
+
+        variable: height
+            Figure height.
+
+        variable: color
+            Color scale.
+
+        variable: linesize, markersize
+            Requested size for the line and markers.
+
+        variable: title
+            Title of the graph.
+            
+        Return:
+        
+        variable: dist, datasec
+            X, Y values for the profile
+        
+        """
+
+        if xm > self.x.max():
+            xm = self.x.max()
+
+        if ym > self.y.max():
+            ym = self.y.max()
+
+        if xo < self.x.min():
+            xo = self.x.min()
+
+        if yo < self.y.min():
+            yo = self.y.min()
+
+        xsec, ysec = self._cross_section(xo, yo, xm, ym, pts)
+        rect_B_spline = RectBivariateSpline(self.y[:,0], self.x[0,:], vData)
+        datasec = rect_B_spline.ev(ysec, xsec)
+        dist = np.sqrt(( xsec - xo )**2 + ( ysec - yo )**2)
+
+        if view:
+            data = Data([
+               Scatter(
+                    x=dist,
+                    y=datasec,
+                    mode='lines+markers',
+                    name="'spline'",
+                    line=dict(
+                        shape='spline',
+                        color = color,
+                        width = linesize
+
+                    ),
+                    marker = dict(
+                        symbol='circle',
+                        size = markersize,
+                        color = 'white',
+                        line = dict(
+                            width = 1,
+                            color = 'black'
+                        )
+                    )
+                )
+                ])
+            layout = dict(
+                title=title,
+                width=width,
+                height=height
+                )
+
+            fig = Figure(data=data, layout=layout)
+            plotly.offline.iplot(fig)
+
+        return dist, datasec
+    
+    def profile_mean(self,a):
+        return sum(a) / len(a)
+
+    def profile_min(self,a):
+        return min(a)
+
+    def profile_max(self,a):
+        return max(a)
+    
+    def statProfiles(self, pData = None, pDist = None, width = 800, height = 400, color = 'green', linesize = 2,
+                    title = 'Section Min, Mean, Max '):
+        """
+        Plot profile mean, max and min.
+
+        Parameters
+        ----------
+
+        variable: pData
+            Dataset to plot along Y axis.
+            
+        variable: pDist
+            Dataset to plot along X axis.
+            
+        variable: width
+            Figure width.
+
+        variable: height
+            Figure height.
+
+        variable: color
+            Color scale.
+
+        variable: linesize, markersize
+            Requested size for the line and markers.
+
+        variable: title
+            Title of the graph.
+            
+        Return:
+        
+        variable: minZ, meanZ, maxZ
+            Y values for the profile (minZ, meanZ, maxZ)
+        """
+
+        meanZ = map(self.profile_mean, zip(*pData))
+        minZ = map(self.profile_min, zip(*pData))
+        maxZ = map(self.profile_max, zip(*pData))
+        
+        trace0 = Scatter(
+            x=pDist,
+            y=maxZ,
+            mode='lines',
+            line=dict(
+                shape='spline',
+                width = 0.5,
+                color = 'rgb(0, 0, 0)'
+            ),
+            name='max'
+        )
+        
+        trace1 = Scatter(
+            x=pDist,
+            y=minZ,
+            mode='lines',
+            line=dict(
+                shape='spline',
+                width = 0.5,
+                color = 'rgb(0, 0, 0)'
+            ),
+            opacity=0.5,
+            fill='tonexty',
+            fillcolor=color,
+            name='min'
+        )
+        
+        trace2 = Scatter(
+            x=pDist,
+            y=meanZ,
+            mode='lines',
+            line=dict(
+                shape='spline',
+                width = linesize,
+                color = 'rgb(0, 0, 0)'
+            ),
+            name='mean'
+        )
+        data = [trace0,trace1,trace2]
+        
+        layout = dict(
+            title=title,
+            width=width,
+            height=height
+        )
+
+        fig = Figure(data=data, layout=layout)
+        plotly.offline.iplot(fig)
+
+        return minZ, meanZ, maxZ 
+    
+    def timeProfiles(self, pData = None, pDist = None, width = 800, height = 400, linesize = 2,
+                    title = 'Profile evolution with time'):
+        """
+        Plot profile mean, max and min.
+
+        Parameters
+        ----------
+
+        variable: pData
+            Dataset to plot along Y axis.
+            
+        variable: pDist
+            Dataset to plot along X axis.
+            
+        variable: width
+            Figure width.
+
+        variable: height
+            Figure height.
+
+        variable: color
+            Color scale.
+
+        variable: linesize, markersize
+            Requested size for the line and markers.
+
+        variable: title
+            Title of the graph.
+            
+        Return:
+        
+        variable: minZ, meanZ, maxZ
+            Y values for the profile (minZ, meanZ, maxZ)
+        """
+
+        trace = {}
+        data = []
+    
+        for i in range(0,len(pData)):
+            trace[i] = Scatter(
+                x=pDist,
+                y=pData[i,:],
+                mode='lines',
+                line=dict(
+                    shape='spline',
+                    width = linesize,
+                    #color = color
+                ),
+            )
+            data.append(trace[i])
+        
+        layout = dict(
+            title=title,
+            width=width,
+            height=height
+        )
+        
+        fig = Figure(data=data, layout=layout)
+        plotly.offline.iplot(fig)
+    
     def viewGrid(self, width = 800, height = 800,
                  Dmin = None, Dmax = None, color = None, reverse=False,
                  Data = None, title='Grid'):
