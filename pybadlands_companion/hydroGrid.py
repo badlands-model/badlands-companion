@@ -30,6 +30,44 @@ plotly.offline.init_notebook_mode()
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
 
+class tributaries:
+    """
+    Class for storing tributaries.
+    """
+
+    def __init__(self):
+        """
+        Initialization function which takes the folder path to Badlands outputs
+        and the number of CPUs used to run the simulation. It also takes a point
+        coordinates contained in a catchment of interest.
+
+        Parameters
+        ----------
+        variable : folder
+            Folder path to Badlands outputs.
+
+        variable: ncpus
+            Number of CPUs used to run the simulation.
+
+        variable: ptXY
+            X-Y coordinates of the point contained within the catchment.
+
+        """
+        self.streamX = None
+        self.streamY = None
+        self.streamZ = None
+        self.streamFA = None
+        self.streamChi = None
+        self.streamPe = None
+        self.streamLght = None
+        self.dist = None
+        self.Zdata = None
+        self.FAdata = None
+        self.Chidata = None
+        self.Pedata = None
+
+        return
+    
 class hydroGrid:
     """
     Class for analysing hydrometrics from Badlands outputs.
@@ -267,6 +305,72 @@ class hydroGrid:
 
         return
 
+    def computeTribParams(self, tribList=None, kd=None, kc=None, m=None, n=None, num=500):
+        """
+        Computes the Peclet and cumulative tributaries stream lenght.
+
+        Parameters
+        ----------
+        variable : tribList
+            All tributary dataset.
+
+        variable : kd
+            Hillslope diffusion coefficient.
+
+        variable : kc
+            Erodibility coefficient.
+
+        variable : m
+            Coefficient m of stream power law.
+
+        variable : n
+            Coefficient n of stream power law.
+
+        variable : num
+            Number of samples to generate.            
+        """
+
+        for t in range(len(tribList)):
+        
+            trib = tribList[t]
+            lenght = 0.
+            trib.streamPe = np.zeros(len(trib.streamX))
+            trib.streamLght = np.zeros(len(trib.streamX))
+
+            if len(trib.streamX) > 1:
+                for p in range(1,len(trib.streamX)):
+
+                    dx = trib.streamX[p] - trib.streamX[p-1]
+                    dy = trib.streamY[p] - trib.streamY[p-1]
+                    lenght = lenght + np.sqrt(dx**2 + dy**2)
+
+                    trib.streamLght[p] = lenght
+                    trib.streamPe[p] = kc * (trib.streamLght[p]**(2*(m + 1) - n)) \
+                        / (kd * trib.streamZ[p]**(1-n))
+
+                trib.streamFA = trib.streamFA.reshape(len(trib.streamFA))
+                trib.streamChi = trib.streamChi.reshape(len(trib.streamChi))
+
+                # Interpolation functions
+                trib.dist = np.linspace(0., trib.streamLght.max(), num=num,
+                                   endpoint=True)
+                pecletFunc = interpolate.interp1d(trib.streamLght,
+                                                   trib.streamPe, kind='linear')
+                faFunc = interpolate.interp1d(trib.streamLght,
+                                               trib.streamFA, kind='linear')
+                chiFunc = interpolate.interp1d(trib.streamLght,
+                                                trib.streamChi, kind='linear')
+                zFunc = interpolate.interp1d(trib.streamLght,
+                                              trib.streamZ-trib.streamZ[0], kind='linear')
+
+                # Get data
+                trib.Zdata = zFunc(trib.dist)
+                trib.FAdata = faFunc(trib.dist)
+                trib.Chidata = chiFunc(trib.dist)
+                trib.Pedata = pecletFunc(trib.dist)
+
+        return
+    
     def _colorCS(self, color):
         """
         Compute color scale values from matplotlib colormap.
@@ -279,7 +383,110 @@ class hydroGrid:
                                                       int(b*255+0.5))])
         return colorCS
 
+    def findTribTop(self, donor = None, rcv = None):
+        """
+        Find the top of each tributaries in the catchment.
 
+        Parameters
+        ----------
+
+        variable: donor
+            Donor points coordinates
+
+        variable: rcv
+            Receiver points coordinates
+
+        Return
+        --------
+        
+        variable: uniqueRcv
+            List of node IDs for the top of each tributary.
+        """
+
+        # Combine donors and receivers
+        mergeDR = np.vstack((donor,rcv))
+        mDR = np.copy(mergeDR)
+        ddr = mDR.astype(int)
+
+        # Get the IDs of the top of each tributaries stream
+        uniqueRcv = []
+        for i in range(len(ddr)):
+            xx = ddr[i,0]
+            yy = ddr[i,1]
+            id = np.where(np.logical_and(ddr[:,0]==xx, ddr[:,1]==yy))[0]
+            if len(id) == 1:
+                uniqueRcv.append(id[0])
+
+        return uniqueRcv 
+    
+    def extractAllStreams(self, startIDs = None):
+        """
+        Extract all tributaries in the catchment.
+
+        Parameters
+        ----------
+
+        variable: startIDs
+            List of node IDs for the top of each tributary.
+
+        Return
+        --------
+        
+        variable: streamlist
+            List of all streams in the catchment
+        """
+
+        streamlist = []
+        
+        # Start from the top and recursively store tributaries connectivity
+        for i in range(len(startIDs)):
+            trib = tributaries()
+            streamIDs = np.zeros(len(self.FA),dtype=int)
+            down = int(startIDs[i])
+            streamIDs[0] = down
+            k = 1
+            loop = True
+            xnext,ynext = self.rcvX[down],self.rcvY[down]
+
+            while (loop):
+                n2 = np.where(np.logical_and(abs(self.donX - xnext) < 1.,
+                                             abs(self.donY - ynext) < 1))[0]
+                n1 = np.where(np.logical_and(abs(self.rcvX - xnext) < 1.,
+                                             abs(self.rcvY - ynext) < 1))[0]
+                n = np.hstack((n1, n2))
+                if len(n) > 0 :
+                    nAll = np.unique(n)
+                    idx = np.where(np.logical_and(nAll != down,
+                                   nAll != streamIDs[k-1]))[0]
+                    if len(idx) > 0:
+                        nIDs =  nAll[idx]
+                        next = nIDs[np.argmax(self.FA[nIDs])]
+                        if k > 1 and (int(next) == streamIDs[k-1] or \
+                            int(next) == streamIDs[k-2]):
+                            break
+                        streamIDs[k] = int(next)
+                        down = int(next)
+                        k += 1
+                        xnext,ynext = self.rcvX[down],self.rcvY[down]
+                    else:
+                        loop = False
+                else:
+                    loop = False
+
+            id = np.where(streamIDs > 0)[0]
+
+            # Reverse order to store data from outlet to top
+            stIDs = streamIDs[id][::-1]
+            trib.streamX = self.donX[stIDs]
+            trib.streamY = self.donY[stIDs]
+            trib.streamZ = self.Z[stIDs]
+            trib.streamFA = self.FA[stIDs]
+            trib.streamChi = self.Chi[stIDs]
+
+            streamlist.append(trib)    
+            
+        return streamlist
+    
     def viewNetwork(self, markerPlot = True, linePlot = False, lineWidth = 3, markerSize = 15, \
                    val = 'chi', width = 800, height = 400, colorMap = None, \
                    colorScale = None, reverse = False, title = '<br>Stream network graph'):
@@ -649,6 +856,156 @@ class hydroGrid:
 
         return
 
+    def viewTribPlot(self, tribWidth = 2, tribColor = 'rgba(207, 215, 222, 0.5)', \
+                     mainWidth = 5, mainColor = 'rgba(233, 109, 196, 1)', \
+                     xval = 'dist', yval = 'chi', tribList = None, distLimit = 0, \
+                     width = 800, height = 500, title = None):
+        """
+        Plot main stream and tributary flow parameters.
+
+        Parameters
+        ----------
+
+        variable: tribWidth
+            Line width for tributaries
+
+        variable: tribColor
+            Line color for tributaries
+            
+        variable: mainWidth
+            Line width for main stream
+
+        variable: mainColor
+            Line color for main stream
+            
+        variable: xval
+            Name of the dataset to plot along the X direction: 'dist', 'chi', 'FA', 'Z', 'Pe'
+
+        variable: yval
+            Name of the dataset to plot along the Y direction: 'dist', 'chi', 'FA', 'Z', 'Pe'
+
+        variable: tribList
+            List of all streams in the catchment
+        
+        variable: lenLimit
+            Limit the number of tributaries to plot based on each tributary length (m)
+            
+        variable: width
+            Figure width.
+
+        variable: height
+            Figure height.
+
+        variable: title
+            Title of the graph.
+        """
+
+        if xval == 'dist':
+            xdata = self.dist
+        elif xval == 'FA':
+            IDo = np.where(self.FAdata == 0.)[0]
+            self.FAdata[IDo] = 1.
+            xdata = np.log(self.FAdata)
+        elif xval == 'chi':
+            xdata = self.Chidata
+        elif xval == 'Z':
+            xdata = self.Zdata
+        elif xval == 'Pe':
+            xdata = self.Pedata
+        else:
+            raise RuntimeError('The requested X value is unknown, options are: dist, chi, Fa, Z, Pe')
+
+        if yval == 'dist':
+            ydata = self.dist
+        elif yval == 'FA':
+            IDo = np.where(self.FAdata == 0.)[0]
+            self.FAdata[IDo] = 1.
+            ydata = np.log(self.FAdata)
+        elif yval == 'chi':
+            ydata = self.Chidata
+        elif yval == 'Z':
+            ydata = self.Zdata
+        elif yval == 'Pe':
+            ydata = self.Pedata
+        else:
+            raise RuntimeError('The requested Y value is unknown, options are: dist, chi, Fa, Z, Pe')
+
+        traces = []
+        
+        for i in range(len(tribList)):
+            if len(tribList[i].streamX) > 1 and tribList[i].dist[-1] > distLimit:
+                
+                if xval == 'dist':
+                    xd = tribList[i].dist
+                elif xval == 'FA':
+                    IDo = np.where(tribList[i].FAdata == 0.)[0]
+                    tribList[i].FAdata[IDo] = 1.
+                    xd = np.log(tribList[i].FAdata)
+                elif xval == 'chi':
+                    xd = tribList[i].Chidata
+                elif xval == 'Z':
+                    xd = tribList[i].Zdata
+                else: 
+                    xd = tribList[i].Pedata
+
+                if yval == 'dist':
+                    y1 = tribList[i].dist
+                elif yval == 'FA':
+                    IDo = np.where(tribList[i].FAdata == 0.)[0]
+                    self.FAdata[IDo] = 1.
+                    y1 = np.log(tribList[i].FAdata)
+                elif yval == 'chi':
+                    y1 = tribList[i].Chidata
+                elif yval == 'Z':
+                    y1 = tribList[i].Zdata
+                else:
+                    y1 = tribList[i].Pedata   
+                    
+                traces.append(
+                    Scatter(
+                        x=xd,
+                        y=y1,
+                        mode='lines',
+                        name="'spline'",
+                        opacity = 1.,
+                        line=dict(
+                            shape='spline',
+                            color = tribColor,
+                            width = tribWidth
+                        ),
+                    )
+                )
+        
+        traces.append(
+            Scatter(
+                x=xdata,
+                y=ydata,
+                mode='lines',
+                name="'spline'",
+                opacity = 1.,
+                line=dict(
+                    shape='spline',
+                    color = mainColor,
+                    width = mainWidth
+                )
+            )
+        )
+
+        layout = dict(
+            showlegend=False,
+            title=title,
+            width=width,
+            height=height,
+            hovermode='closest',
+            xaxis=XAxis(showgrid=True, zeroline=True, showticklabels=True),
+            yaxis=YAxis(showgrid=True, zeroline=True, showticklabels=True)
+        )
+
+        fig = Figure(data=Data(traces), layout=layout)
+        plotly.offline.iplot(fig)
+
+        return
+    
     def timeProfiles(self, pData = None, pDist = None, width = 800, height = 400, linesize = 2,
                     title = 'Profile evolution with time'):
         """
