@@ -725,7 +725,122 @@ class morphoGrid:
 
         return
 
+    def viewScatter3D(self, width = 800, height = 800, colors='Viridis',
+                 dataX = None, dataY = None, dataZ = None, title='Scatter plot'):
+        """
+        Use Plotly library to visualise a dataset in 3D.
 
+        Parameters
+        ----------
+
+        variable: width
+            Figure width.
+
+        variable: height
+            Figure height.
+
+        variable: colors
+            Color scale.
+            
+        variable: dataX
+            Data for X-axis.
+
+        variable: dataY
+            Data for Y-axis.
+           
+        variable: dataZ
+            Data for Z-axis.
+            
+        variable: title
+            Title of the graph.
+        """
+        
+        #trace = {}
+        data = []
+        #A = np.asarray(dataX) / np.asarray(dataY)
+        #A[np.isnan(A)] = 0
+        #A[np.isinf(A)] = max(A[A<1000])+1
+        trace = Scatter3d(
+           x=dataX,
+           y=dataY,
+           z=dataZ,
+           mode='markers',
+           marker=dict(
+                    size=8,
+                    #color=A,
+                    #colorscale=colors,
+                    opacity=0.8
+                )
+           )
+        data.append(trace)
+        
+        layout = dict(
+            title=title,
+            width=width,
+            height=height,
+            margin=dict(
+                l=0,
+                r=0,
+                b=0,
+                t=0
+            ),
+            scene=Scene(
+                xaxis=XAxis(title='dip'),
+                yaxis=YAxis(title='slip'),
+                zaxis=ZAxis(title='sed')
+            )
+        )
+
+        fig = Figure(data=data, layout=layout)
+        plotly.offline.iplot(fig)
+
+        return
+    
+    def viewScatter(self, width = 800, height = 800,
+                 dataX = None, dataY = None, title='Scatter plot'):
+        """
+        Use Plotly library to visualise a dataset in 2D.
+
+        Parameters
+        ----------
+
+        variable: width
+            Figure width.
+
+        variable: height
+            Figure height.
+
+        variable: dataX
+            Data for X-axis.
+
+        variable: dataY
+            Data for Y-axis.
+           
+        variable: title
+            Title of the graph.
+        """
+        
+        #trace = {}
+        data = []
+    
+        trace = Scatter(
+           x=dataX,
+           y=dataY,
+           mode='markers',
+           )
+        data.append(trace)
+        
+        layout = dict(
+            title=title,
+            width=width,
+            height=height
+        )
+
+        fig = Figure(data=data, layout=layout)
+        plotly.offline.iplot(fig)
+
+        return
+    
     def viewSurf(self, width = 800, height = 800,
                  zmin = None, zmax = None, color = None, reverse=False,
                  vData = None, subsample = 1, title='Surface'):
