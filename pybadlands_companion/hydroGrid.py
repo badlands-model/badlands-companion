@@ -37,21 +37,7 @@ class tributaries:
 
     def __init__(self):
         """
-        Initialization function which takes the folder path to Badlands outputs
-        and the number of CPUs used to run the simulation. It also takes a point
-        coordinates contained in a catchment of interest.
-
-        Parameters
-        ----------
-        variable : folder
-            Folder path to Badlands outputs.
-
-        variable: ncpus
-            Number of CPUs used to run the simulation.
-
-        variable: ptXY
-            X-Y coordinates of the point contained within the catchment.
-
+        Initialization function for the tributary class.
         """
         self.streamX = None
         self.streamY = None
