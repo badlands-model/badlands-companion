@@ -74,8 +74,8 @@ class toolSea:
         
         if curve1 != None and curve2 != None:
             self.build = False
-            self.df1 = pd.read_csv(curve1, sep='\t', header=None, names=['h','t'])
-            self.df2 = pd.read_csv(curve2, sep=' ', header=None, names=['h','t'])
+            self.df1 = pd.read_csv(curve1, sep=r'\s+', header=None, names=['h','t'])
+            self.df2 = pd.read_csv(curve2, sep=r'\s+', header=None, names=['h','t'])
         else:
             self.build = True
             self.sl1 = None
