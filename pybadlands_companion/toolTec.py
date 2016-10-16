@@ -135,7 +135,7 @@ class toolTec:
                         dispgrid[j,i] += A
 
                 if axis == 'Y':
-                    if self.y[i] >= edge1 and self.y[i] <= edge2 :
+                    if self.y[j] >= edge1 and self.y[j] <= edge2 :
                         dispgrid[j,i] += A
 
         return dispgrid
@@ -172,8 +172,8 @@ class toolTec:
                         dispgrid[j,i] = 0.5 * A * np.cos( 2.* np.pi * (self.x[i] - center) / P) + base + 0.5 * A
 
                 if axis == 'Y':
-                    if abs(self.y[i] - center) <= P*0.5:
-                        dispgrid[j,i] = 0.5 * A * np.cos( 2.* np.pi * (self.y[i] - center) / P) + base + 0.5 * A
+                    if abs(self.y[j] - center) <= P*0.5:
+                        dispgrid[j,i] = 0.5 * A * np.cos( 2.* np.pi * (self.y[j] - center) / P) + base + 0.5 * A
 
         return dispgrid
 
