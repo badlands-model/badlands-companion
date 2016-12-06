@@ -514,7 +514,6 @@ class stratalSection:
         self.dist = np.sqrt(( xsec - xo )**2 + ( ysec - yo )**2)
         self.xsec = xsec
         self.ysec = ysec
-        print self.xsec.shape,self.ysec.shape,self.xi.shape,self.yi.shape
         
         for k in range(self.nz):
             # thick
