@@ -20,9 +20,10 @@ import colorlover as cl
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree
 import xml.etree.ElementTree as ETO
-import scipy.ndimage.filters as filters
+import scipy.ndimage.filters as filters 
 from scipy.interpolate import RectBivariateSpline
 from scipy.ndimage.filters import gaussian_filter
+from scipy.interpolate import RegularGridInterpolator
 
 import plotly
 from plotly import tools
@@ -513,6 +514,8 @@ class stratalSection:
         self.dist = np.sqrt(( xsec - xo )**2 + ( ysec - yo )**2)
         self.xsec = xsec
         self.ysec = ysec
+        print self.xsec.shape,self.ysec.shape,self.xi.shape,self.yi.shape
+        
         for k in range(self.nz):
             # thick
             rect_B_spline = RectBivariateSpline(self.yi, self.xi, self.th[:,:,k])
@@ -528,16 +531,21 @@ class stratalSection:
             self.secElev.append(secElev)
 
             # Depth
-            rect_B_spline2 = RectBivariateSpline(self.yi, self.xi, self.dep[:,:,k])
-            data2 = rect_B_spline2.ev(ysec, xsec)
-            secDep = filters.gaussian_filter1d(data2,sigma=gfilter)
+            if k > 0:
+                rect_B_spline2 = RectBivariateSpline(self.yi, self.xi, self.dep[:,:,k])
+                data2 = rect_B_spline2.ev(ysec, xsec)
+                secDep = filters.gaussian_filter1d(data2,sigma=gfilter)
+            else:
+                rect_linear = RegularGridInterpolator((self.xi, self.yi), self.dep[:,:,k])
+                data2 = rect_linear((xsec, ysec))
+                secDep = filters.gaussian_filter1d(data2,sigma=gfilter)
             self.secDep.append(secDep)
-
+            
         # Ensure the spline interpolation does not create underlying layers above upper ones
-        topsec = self.secDep[self.nz-1]
-        for k in range(self.nz-2,-1,-1):
+        botsec = self.secDep[0]
+        for k in range(1,self.nz):
             secDep = self.secDep[k]
-            self.secDep[k] = np.minimum(secDep, topsec)
-            topsec = self.secDep[k]
+            self.secDep[k] = np.maximum(secDep, botsec)
+            botsec = self.secDep[k]
 
         return
