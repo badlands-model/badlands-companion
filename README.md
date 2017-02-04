@@ -38,7 +38,7 @@ The pre-processing notebooks will help you to create:
 - river profile evolution based on main stream elevation and distance to outlet,
 - Peclet number distribution which evaluates the dominant processes shaping the landscape,
 - Chi parameter that characterizes rivers system evolution based on terrain steepness and the arrangement of tributaries,
-- discharge profiles along the main catchment river
+- discharge profiles along the main catchment river.
 
 ### Stratigraphic analyses
 
