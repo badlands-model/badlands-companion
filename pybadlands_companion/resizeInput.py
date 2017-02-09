@@ -145,14 +145,14 @@ class resizeInput:
         tec = pandas.read_csv(str(inTec), sep=r'\s+', engine='c',
                                header=None, na_filter=False, dtype=numpy.float, low_memory=False)
 
-        T = numpy.reshape(rain.values,(self.nx, self.ny),order='F')
+        T = numpy.reshape(tec.values,(self.nx, self.ny),order='F')
 
         RGI_function = RegularGridInterpolator((self.xgrid, self.ygrid), T)
 
         ti = RGI_function((self.xi.flatten(),self.yi.flatten()))
 
         df = pandas.DataFrame({'T':ti.flatten()})
-        df.to_csv(str(outRain),columns=['T'], sep=' ', index=False ,header=0)
+        df.to_csv(str(outTec),columns=['T'], sep=' ', index=False ,header=0)
 
         return
 
