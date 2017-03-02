@@ -20,7 +20,7 @@ import colorlover as cl
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree
 import xml.etree.ElementTree as ETO
-import scipy.ndimage.filters as filters 
+import scipy.ndimage.filters as filters
 from scipy.interpolate import RectBivariateSpline
 from scipy.ndimage.filters import gaussian_filter
 from scipy.interpolate import RegularGridInterpolator
@@ -514,7 +514,7 @@ class stratalSection:
         self.dist = np.sqrt(( xsec - xo )**2 + ( ysec - yo )**2)
         self.xsec = xsec
         self.ysec = ysec
-        
+
         for k in range(self.nz):
             # thick
             rect_B_spline = RectBivariateSpline(self.yi, self.xi, self.th[:,:,k])
@@ -535,11 +535,11 @@ class stratalSection:
                 data2 = rect_B_spline2.ev(ysec, xsec)
                 secDep = filters.gaussian_filter1d(data2,sigma=gfilter)
             else:
-                rect_linear = RegularGridInterpolator((self.xi, self.yi), self.dep[:,:,k])
-                data2 = rect_linear((xsec, ysec))
+                rect_linear = RegularGridInterpolator((self.yi, self.xi), self.dep[:,:,k])
+                data2 = rect_linear((ysec, xsec))
                 secDep = filters.gaussian_filter1d(data2,sigma=gfilter)
             self.secDep.append(secDep)
-            
+
         # Ensure the spline interpolation does not create underlying layers above upper ones
         botsec = self.secDep[0]
         for k in range(1,self.nz):
