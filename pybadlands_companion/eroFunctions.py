@@ -7,7 +7,7 @@
 ##                                                                                   ##
 ##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~##
 """
-Here we set usefull functions used to build dependency of erodibility coefficient to
+Here we set usefull functions used to build dependency of erodibility coefficient to 
 precipitation and sediment supply.
 """
 
@@ -20,11 +20,11 @@ class eroFunctions():
     """
     Class for creating simple dependencies functions for erodibility coefficients.
     """
-
+    
     def __init__(self, min=0., max=None, sample=None):
-
+        
         self.x = np.linspace(min,max,num=sample,endpoint=True)
-
+        
         return
 
     def sinfct(self):
@@ -90,9 +90,9 @@ class eroFunctions():
         y = np.ones(len(self.x))
         idx1 = self.x <= mean1
         idx2 = self.x > mean2
-        y[idx1] = np.exp(-((self.x[idx1] - mean1) ** 2.) / float(sigma1) ** 2.)
-        y[idx2] = np.exp(-((self.x[idx2] - mean2) ** 2.) / float(sigma2) ** 2.)
-
+        y[idx1] = np.exp(-((self.x[idx1] - mean1) ** 2.) / float(sigma1) ** 2.) 
+        y[idx2] = np.exp(-((self.x[idx2] - mean2) ** 2.) / float(sigma2) ** 2.) 
+        
         return y
 
     def gbellfct(self, a, b, c):
@@ -121,7 +121,7 @@ class eroFunctions():
 
         """
         return 1. / (1. + np.abs((self.x - c) / a) ** (2 * b))
-
+    
     def trapfct(self, abcd):
         """
         Trapezoidal function generator.
@@ -156,7 +156,7 @@ class eroFunctions():
         y[idx] = np.zeros(len(idx))
 
         return y
-
+    
     def trifct(self, abc):
         """
         Triangular function generator.
@@ -192,7 +192,7 @@ class eroFunctions():
         idx = np.nonzero(self.x == b)
         y[idx] = 1
         return y
-
+    
     def sigfct(self, b, c):
         """
         The basic sigmoid function generator.
@@ -215,7 +215,7 @@ class eroFunctions():
 
         """
         return 1. / (1. + np.exp(- c * (self.x - b)))
-
+ 
     def linfct(self, a, b):
         """
         The basic linear function generator.
@@ -235,23 +235,23 @@ class eroFunctions():
         """
         s = (a-b)/self.x.max()
         return s * (self.x) + b
-
+    
     def exportFunction(self, val=None, nameCSV='sedsupply'):
         """
         Write CSV file following Badlands requirements:
             + 2 columns file containing the X values (1st column) and the Y values (2nd column),
             + the separator is a space.
-
+        
         Parameters
         ----------
-
+        
         variable : val
             Function used in either the sediment supply or slope dependency.
-
+            
         variable: nameCSV
             Name of the saved CSV file.
         """
         df = pd.DataFrame({'X':self.x,'Y':val})
         df.to_csv(str(nameCSV)+'.csv',columns=['X', 'Y'], sep=' ', index=False ,header=0)
-
+        
         return
