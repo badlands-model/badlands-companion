@@ -100,7 +100,8 @@ class stratiMesh:
         
         return rockProp, paleoH
     
-    def _write_hdf5(self, xt, yt, zt, cellt, layID, layH, layD, propR, step, rank):
+    def _write_hdf5(self, xt, yt, zt, cellt, layID, layH, layD, propR, 
+                    clayID, clayD, clayH, cpropR, step, rank):
         """
         Write the HDF5 file containing the stratigraphic mesh variables.
         Parameters
@@ -121,6 +122,14 @@ class stratiMesh:
             Proportion of each rock type in each layer.
         variable : layD
             Paleo depth informs about the elevation at time of deposition.
+        variable : clayID
+            Cell ID of each layer.
+        variable : clayH
+            Cell thickness of each layer.
+        variable : cpropR
+            Cell proportion of each rock type in each layer.
+        variable : clayD
+            Cell paleo depth informs about the elevation at time of deposition.
         variable: rank
             TIN file for the considered CPU.
         """
@@ -140,16 +149,29 @@ class stratiMesh:
             f.create_dataset('layID',shape=(len(xt),1), dtype='int32', compression='gzip')
             f["layID"][:,0] = layID
             
+            f.create_dataset('clayID',shape=(len(cellt[:,0]),1), dtype='int32', compression='gzip')
+            f["clayID"][:,0] = clayID
+            
             f.create_dataset('layH',shape=(len(xt),1), dtype='float32', compression='gzip')
             f["layH"][:,0] = layH
             
+            f.create_dataset('clayH',shape=(len(cellt[:,0]),1), dtype='float32', compression='gzip')
+            f["clayH"][:,0] = clayH
+            
             f.create_dataset('layD',shape=(len(xt),1), dtype='float32', compression='gzip')
             f["layD"][:,0] = layD
+            
+            f.create_dataset('clayD',shape=(len(cellt[:,0]),1), dtype='float32', compression='gzip')
+            f["clayD"][:,0] = clayD
             
             for r in range(self.rockNb):
                 attribute = 'propR'+str(r)
                 f.create_dataset(attribute,shape=(len(xt),1), dtype='float32', compression='gzip')
                 f[attribute][:,0] = propR[:,r]
+                
+                attribute = 'cpropR'+str(r)
+                f.create_dataset(attribute,shape=(len(cellt[:,0]),1), dtype='float32', compression='gzip')
+                f[attribute][:,0] = cpropR[:,r]
             
         return
 
@@ -194,9 +216,19 @@ class stratiMesh:
             f.write('Dimensions="%d 1">%s:/layID</DataItem>\n'%(nodes[p],pfile))
             f.write('         </Attribute>\n')
             
+            f.write('         <Attribute Type="Scalar" Center="Cell" Name="layer ID">\n')
+            f.write('          <DataItem Format="HDF" NumberType="Int" ')
+            f.write('Dimensions="%d 1">%s:/clayID</DataItem>\n'%(elems[p],pfile))
+            f.write('         </Attribute>\n')
+            
             f.write('         <Attribute Type="Scalar" Center="Node" Name="paleo-depth">\n')
             f.write('          <DataItem Format="HDF" NumberType="Float" Precision="4" ')
             f.write('Dimensions="%d 1">%s:/layD</DataItem>\n'%(nodes[p],pfile))
+            f.write('         </Attribute>\n')
+            
+            f.write('         <Attribute Type="Scalar" Center="Cell" Name="paleo-depth">\n')
+            f.write('          <DataItem Format="HDF" NumberType="float" ')
+            f.write('Dimensions="%d 1">%s:/clayD</DataItem>\n'%(elems[p],pfile))
             f.write('         </Attribute>\n')
             
             f.write('         <Attribute Type="Scalar" Center="Node" Name="layer th">\n')
@@ -204,10 +236,20 @@ class stratiMesh:
             f.write('Dimensions="%d 1">%s:/layH</DataItem>\n'%(nodes[p],pfile))
             f.write('         </Attribute>\n')
             
+            f.write('         <Attribute Type="Scalar" Center="Cell" Name="layer th">\n')
+            f.write('          <DataItem Format="HDF" NumberType="float" ')
+            f.write('Dimensions="%d 1">%s:/clayH</DataItem>\n'%(elems[p],pfile))
+            f.write('         </Attribute>\n')
+            
             for r in range(self.rockNb):
                 f.write('         <Attribute Type="Scalar" Center="Node" Name="prop rock%d">\n'%r)
                 f.write('          <DataItem Format="HDF" NumberType="Float" Precision="4" ')
                 f.write('Dimensions="%d 1">%s:/propR%d</DataItem>\n'%(nodes[p],pfile,r))
+                f.write('         </Attribute>\n')
+                
+                f.write('         <Attribute Type="Scalar" Center="Cell" Name="prop rock%d">\n'%r)
+                f.write('          <DataItem Format="HDF" NumberType="Float"  ')
+                f.write('Dimensions="%d 1">%s:/cpropR%d</DataItem>\n'%(elems[p],pfile,r))
                 f.write('         </Attribute>\n')
             
             f.write('      </Grid>\n')
@@ -314,16 +356,23 @@ class stratiMesh:
                 rockProp = np.zeros((tmpRock.shape))
                 for k in range(rockNb):
                     rockProp[r,c,k] = np.divide(tmpRock[r,c,k],layTH[r,c])
-                print tmpRock.shape,layNb
+                    
                 ptmp = rockProp.reshape((ptsNb*(layNb-1),rockNb),order='F')
                 ptmp = np.concatenate((np.zeros((ptsNb,rockNb)),ptmp), axis=0)
-                print ptmp.shape
                 
                 # Creation of each layer coordinates
                 xtmp = x[:,0]
                 ytmp = y[:,0]
                 ctmp = cells 
                 oldcells = ctmp
+                
+                # Cell based rock property attributes
+                cellP = np.zeros((len(cells),rockNb))
+            
+                # Cell layer index
+                cellI = np.array([np.arange(1,layNb),]*len(cells),dtype=int)
+                cellItmp = cellI.flatten(order='F')
+                
                 for l in range(1,layNb):
                     xtmp = np.concatenate((xtmp, x[:,0]), axis=0)
                     ytmp = np.concatenate((ytmp, y[:,0]), axis=0)
@@ -331,14 +380,28 @@ class stratiMesh:
                     # Creation of each layer elements
                     newcells = oldcells+len(x)
                     celltmp = np.concatenate((oldcells, newcells), axis=1)
+                    cellD = np.sum(dtmp[newcells-1],axis=1)/3.
+                    cellH = np.sum(htmp[newcells-1],axis=1)/3.
+                    for k in range(rockNb):
+                        cellP[:,k] = np.sum(ptmp[newcells-1,k],axis=1)/3.
                     oldcells = newcells
                     if l > 1:
                         ctmp = np.concatenate((ctmp, celltmp), axis=0)
+                        cellDtmp = np.concatenate((cellDtmp, cellD), axis=0)
+                        cellHtmp = np.concatenate((cellHtmp, cellH), axis=0)
+                        cellPtmp = np.concatenate((cellPtmp, cellP), axis=0)
                     else:
-                        ctmp = celltmp
-                
+                        ctmp = np.copy(celltmp)
+                        cellDtmp = np.copy(cellD)
+                        cellHtmp = np.copy(cellH)
+                        cellPtmp = np.copy(cellP)
+                    cellP.fill(0.)
+                        
                 # Create the HDF5 file
-                self._write_hdf5(xtmp, ytmp, ztmp, ctmp, ltmp, htmp, dtmp, ptmp, s, i)
+                self._write_hdf5(xtmp, ytmp, ztmp, 
+                                 ctmp, ltmp, htmp, dtmp, ptmp, 
+                                 cellItmp, cellDtmp, cellHtmp, 
+                                 cellPtmp, s, i)
                 
                 cellnb.append(len(ctmp))
                 ptsnb.append(len(xtmp))
