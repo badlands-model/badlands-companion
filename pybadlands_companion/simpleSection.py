@@ -55,7 +55,7 @@ def viewSea(seafile):
     plt.grid(True)
     plt.xlabel('Sea level (m)',fontsize=11)
     plt.ylabel('Time (years)',fontsize=11)
-    
+
     return SLtime,sealevel
 
 def viewSections(width = 800, height = 400, cs = None, layNb = 2,
@@ -77,29 +77,29 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
     variable: title
         Title of the graph.
     """
-    
+
     colors = cl.scales['9']['div']['RdYlBu']
-    hist = cl.interp( colors, layNb ) 
+    hist = cl.interp( colors, layNb )
     colorrgb = cl.to_rgb( hist )
-    
+
     nlay = layNb - 1
-    
+
     lay = {}
     toplay = cs[nlay].top
     cs[nlay].ndepo = cs[nlay].depo
     cs[nlay].ntop = toplay
 
     botlay = cs[nlay].top - cs[nlay].depo
-    
+
     for i in range(nlay-1,-1,-1):
         tmp1 = cs[i+1].ndepo - cs[i].depo
         tmp2 = cs[i+1].ndepo - tmp1.clip(min=0)
-        cs[i].ndepo = tmp2 
+        cs[i].ndepo = tmp2
         cs[i].ntop = botlay + tmp2
-    
+
     trace = {}
     data = []
-        
+
     for i in range(1,nlay):
         trace[i-1] = Scatter(
             x=cs[i].dist,
@@ -108,13 +108,13 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
             name="layer "+str(i),
             line=dict(
                 shape='line',
-                width = linesize-1, 
+                width = linesize-1,
                 color = colorrgb[i-1] #,
                 #dash = 'dash'
             )
         )
         data.append(trace[i-1])
-    
+
     # Top line
     trace[nlay] = Scatter(
         x=cs[nlay].dist,
@@ -128,7 +128,7 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
         )
     )
     data.append(trace[nlay])
-    
+
     # Bottom line
     trace[nlay+1] = Scatter(
         x=cs[nlay].dist,
@@ -140,20 +140,20 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
             width = linesize,
             color = 'rgb(102, 102, 102)'
         )
-    )   
+    )
     data.append(trace[nlay+1])
-        
+
     layout = dict(
             title=title,
             width=width,
             height=height
     )
-        
+
     fig = Figure(data=data, layout=layout)
     plotly.offline.iplot(fig)
 
     return
-    
+
 class simpleSection:
     """
     Class for creating simple cross-sections from Badlands outputs.
@@ -214,7 +214,7 @@ class simpleSection:
         for i in range(0, self.ncpus):
             df = h5py.File('%s/tin.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
             coords = np.array((df['/coords']))
-            cumdiff = np.array((df['/cumdiff']))
+            cumdiff = np.array((df['/EroDep']))
             if i == 0:
                 x, y, z = np.hsplit(coords, 3)
                 c = cumdiff
@@ -287,9 +287,9 @@ class simpleSection:
             xsec = np.linspace(xo, xm, pts)
             ysec = a * xsec + b
 
-        return xsec,ysec    
-    
-    def getEroDep(self, xo = None, yo = None, xm = None, ym = None, 
+        return xsec,ysec
+
+    def getEroDep(self, xo = None, yo = None, xm = None, ym = None,
                     pts = 100, gfilter = 5):
         """
         Extract a slice from the 3D data set and compute its deposition thicknesses.
@@ -304,7 +304,7 @@ class simpleSection:
         variable: gfilter
             Gaussian smoothing filter
         """
-        
+
         if xm > self.x.max():
             xm = self.x.max()
 
@@ -317,24 +317,24 @@ class simpleSection:
         if yo < self.y.min():
             yo = self.y.min()
 
-        
+
         xsec, ysec = self._cross_section(xo, yo, xm, ym, pts)
-        self.dist = np.sqrt(( xsec - xo )**2 + ( ysec - yo )**2)              
+        self.dist = np.sqrt(( xsec - xo )**2 + ( ysec - yo )**2)
 
         # Surface
         rect_B_spline = RectBivariateSpline(self.y[:,0], self.x[0,:], self.z)
         datatop = rect_B_spline.ev(ysec, xsec)
         self.top = filters.gaussian_filter1d(datatop,sigma=gfilter)
-        
+
         # Cumchange
         rect_B_spline = RectBivariateSpline(self.y[:,0], self.x[0,:], self.cumchange)
         cumdat = rect_B_spline.ev(ysec, xsec)
         gcum = filters.gaussian_filter1d(cumdat,sigma=gfilter)
         self.depo = gcum.clip(min=0)
-        
+
         return
 
-    def view1Section(self, width = 800, height = 400, 
+    def view1Section(self, width = 800, height = 400,
                     linesize = 3, title = 'Cross section'):
         """
         Plot cross-section data on a graph.
@@ -361,7 +361,7 @@ class simpleSection:
             ),
             fill=None
         )
-        
+
         trace1 = Scatter(
             x=self.dist,
             y=self.top+2000,
@@ -374,15 +374,15 @@ class simpleSection:
             ),
             fill='tonexty'
         )
-        
+
         data = [trace0, trace1]
-        
+
         layout = dict(
             title=title,
             width=width,
             height=height
             )
-        
+
         fig = Figure(data=data, layout=layout)
         plotly.offline.iplot(fig)
 
