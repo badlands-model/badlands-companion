@@ -98,7 +98,7 @@ class morphoGrid:
         for i in range(0, self.ncpus):
             df = h5py.File('%s/tin.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
             coords = np.array((df['/coords']))
-            cumdiff = np.array((df['/EroDep']))
+            cumdiff = np.array((df['/cumdiff']))
             discharge = np.array((df['/discharge']))
             if i == 0:
                 x, y, z = np.hsplit(coords, 3)
