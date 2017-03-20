@@ -413,7 +413,7 @@ class morphoGrid:
 
         variable: view
             Show the section plot.
-            
+
         variable: width
             Figure width.
 
@@ -428,12 +428,12 @@ class morphoGrid:
 
         variable: title
             Title of the graph.
-            
+
         Return:
-        
+
         variable: dist, datasec
             X, Y values for the profile
-        
+
         """
 
         if xm > self.x.max():
@@ -487,7 +487,7 @@ class morphoGrid:
             plotly.offline.iplot(fig)
 
         return dist, datasec
-    
+
     def profile_mean(self,a):
         return sum(a) / len(a)
 
@@ -496,7 +496,7 @@ class morphoGrid:
 
     def profile_max(self,a):
         return max(a)
-    
+
     def statProfiles(self, pData = None, pDist = None, width = 800, height = 400, color = 'green', linesize = 2,
                     title = 'Section Min, Mean, Max '):
         """
@@ -507,10 +507,10 @@ class morphoGrid:
 
         variable: pData
             Dataset to plot along Y axis.
-            
+
         variable: pDist
             Dataset to plot along X axis.
-            
+
         variable: width
             Figure width.
 
@@ -525,9 +525,9 @@ class morphoGrid:
 
         variable: title
             Title of the graph.
-            
+
         Return:
-        
+
         variable: minZ, meanZ, maxZ
             Y values for the profile (minZ, meanZ, maxZ)
         """
@@ -535,7 +535,7 @@ class morphoGrid:
         meanZ = map(self.profile_mean, zip(*pData))
         minZ = map(self.profile_min, zip(*pData))
         maxZ = map(self.profile_max, zip(*pData))
-        
+
         trace0 = Scatter(
             x=pDist,
             y=maxZ,
@@ -547,7 +547,7 @@ class morphoGrid:
             ),
             name='max'
         )
-        
+
         trace1 = Scatter(
             x=pDist,
             y=minZ,
@@ -562,7 +562,7 @@ class morphoGrid:
             fillcolor=color,
             name='min'
         )
-        
+
         trace2 = Scatter(
             x=pDist,
             y=meanZ,
@@ -575,7 +575,7 @@ class morphoGrid:
             name='mean'
         )
         data = [trace0,trace1,trace2]
-        
+
         layout = dict(
             title=title,
             width=width,
@@ -585,8 +585,8 @@ class morphoGrid:
         fig = Figure(data=data, layout=layout)
         plotly.offline.iplot(fig)
 
-        return minZ, meanZ, maxZ 
-    
+        return minZ, meanZ, maxZ
+
     def timeProfiles(self, pData = None, pDist = None, width = 800, height = 400, linesize = 2,
                     title = 'Profile evolution with time'):
         """
@@ -597,10 +597,10 @@ class morphoGrid:
 
         variable: pData
             Dataset to plot along Y axis.
-            
+
         variable: pDist
             Dataset to plot along X axis.
-            
+
         variable: width
             Figure width.
 
@@ -615,16 +615,16 @@ class morphoGrid:
 
         variable: title
             Title of the graph.
-            
+
         Return:
-        
+
         variable: minZ, meanZ, maxZ
             Y values for the profile (minZ, meanZ, maxZ)
         """
 
         trace = {}
         data = []
-    
+
         for i in range(0,len(pData)):
             trace[i] = Scatter(
                 x=pDist,
@@ -637,16 +637,16 @@ class morphoGrid:
                 ),
             )
             data.append(trace[i])
-        
+
         layout = dict(
             title=title,
             width=width,
             height=height
         )
-        
+
         fig = Figure(data=data, layout=layout)
         plotly.offline.iplot(fig)
-    
+
     def viewGrid(self, width = 800, height = 800,
                  Dmin = None, Dmax = None, color = None, reverse=False,
                  Data = None, title='Grid'):
@@ -741,20 +741,20 @@ class morphoGrid:
 
         variable: colors
             Color scale.
-            
+
         variable: dataX
             Data for X-axis.
 
         variable: dataY
             Data for Y-axis.
-           
+
         variable: dataZ
             Data for Z-axis.
-            
+
         variable: title
             Title of the graph.
         """
-        
+
         #trace = {}
         data = []
         #A = np.asarray(dataX) / np.asarray(dataY)
@@ -773,7 +773,7 @@ class morphoGrid:
                 )
            )
         data.append(trace)
-        
+
         layout = dict(
             title=title,
             width=width,
@@ -795,7 +795,7 @@ class morphoGrid:
         plotly.offline.iplot(fig)
 
         return
-    
+
     def viewScatter(self, width = 800, height = 800,
                  dataX = None, dataY = None, title='Scatter plot'):
         """
@@ -815,21 +815,21 @@ class morphoGrid:
 
         variable: dataY
             Data for Y-axis.
-           
+
         variable: title
             Title of the graph.
         """
-        
+
         #trace = {}
         data = []
-    
+
         trace = Scatter(
            x=dataX,
            y=dataY,
            mode='markers',
            )
         data.append(trace)
-        
+
         layout = dict(
             title=title,
             width=width,
@@ -840,7 +840,7 @@ class morphoGrid:
         plotly.offline.iplot(fig)
 
         return
-    
+
     def viewSurf(self, width = 800, height = 800,
                  zmin = None, zmax = None, color = None, reverse=False,
                  vData = None, subsample = 1, title='Surface'):
