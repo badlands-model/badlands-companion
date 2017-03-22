@@ -59,28 +59,24 @@ class stratalMesh:
         self.dep = None
         self.th = None
         self.elev = None
-        self.regionID = 0
         self.timestep = 0
 
         return
 
-    def loadStratigraphy(self, regionID=0, timestep=0):
+    def loadStratigraphy(self, timestep=0):
         """
         Read the HDF5 file for a given time step.
 
         Parameters
         ----------
-        variable : regionID
-            Stratigraphic region to load.
         variable : timestep
             Time step to load.
         """
 
-        self.regionID = regionID
         self.timestep = timestep
 
         for i in range(0, self.ncpus):
-            df = h5py.File('%s/sed.region%s.time%s.p%s.hdf5'%(self.folder, regionID, timestep, i), 'r')
+            df = h5py.File('%s/sed.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
             coords = np.array((df['/coords']))
             layDepth = np.array((df['/layDepth']))
             layElev = np.array((df['/layElev']))
@@ -115,7 +111,7 @@ class stratalMesh:
             Folder path to store the stratal vtk mesh.
         """
 
-        vtkfile = '%s/stratalMesh.region%s.time%s'%(outfolder, self.regionID, self.timestep)
+        vtkfile = '%s/stratalMesh.time%s'%(outfolder, self.timestep)
 
         x = np.zeros((self.nx, self.ny, self.nz))
         y = np.zeros((self.nx, self.ny, self.nz))

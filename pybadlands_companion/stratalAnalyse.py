@@ -424,19 +424,17 @@ class stratalSection:
 
         return
 
-    def loadStratigraphy(self, regionID=0, timestep=0):
+    def loadStratigraphy(self, timestep=0):
         """
         Read the HDF5 file for a given time step.
         Parameters
         ----------
-        variable : regionID
-            Stratigraphic region to load.
         variable : timestep
             Time step to load.
         """
 
         for i in range(0, self.ncpus):
-            df = h5py.File('%s/sed.region%s.time%s.p%s.hdf5'%(self.folder, regionID, timestep, i), 'r')
+            df = h5py.File('%s/sed.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
             coords = np.array((df['/coords']))
             layDepth = np.array((df['/layDepth']))
             layElev = np.array((df['/layElev']))
