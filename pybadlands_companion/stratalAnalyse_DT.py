@@ -7,7 +7,7 @@
 ##                                                                                   ##
 ##~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~##
 """
-Here we set usefull functions used to build simple cross-section from Badlands outputs.
+Here we set usefull functions used to analyse stratigraphic sequences from Badlands outputs.
 """
 
 import os
@@ -53,7 +53,7 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
     Parameters
     ----------
     variable: x0, y0
-    Data for plot 
+    Data for plot
     variable: width
         Figure width.
     variable: height
@@ -72,12 +72,12 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
         ),
         fill=None
     )
-        
+
     layout = dict(
             width=width,
             height=height
             )
-        
+
     fig = Figure(data=[trace], layout=layout)
     plotly.offline.iplot(fig)
 
@@ -85,8 +85,8 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
 
 def buildShore(cs = None, cs_b = None, sealevel = None, sealevel_b = None):
     """
-    Calculate the shoreline trajectory (shoreID and shoreElev), the change of accommodation (accom) 
-    and sedimentation (sed) at shoreline, the end point of each depostional layer (depoend), 
+    Calculate the shoreline trajectory (shoreID and shoreElev), the change of accommodation (accom)
+    and sedimentation (sed) at shoreline, the end point of each depostional layer (depoend),
     and sediment flux (sedflux) through time.
     Parameters
     ----------
@@ -124,7 +124,23 @@ def waterDepth(cs = None, envIDs = None):
 
     return IPs
 
-def viewSection(width = 800, height = 400, cs = None, dnlay = None, 
+def depthID(cs = None, sealevel = None, envIDs = None):
+    """
+    Calculate the position of different depositional environments for Wheeler diagram.
+    Parameters
+    ----------
+    variable: sealevel
+        The value of sea level through time.
+    variable: envIDs
+        Range of water depth of each depostional environment.
+    """
+    envID = np.zeros(len(envIDs))
+    for i in range(len(envIDs)):
+        envID[i] = np.amax(np.where((cs.secDep[cs.nz-1]) > (sealevel - envIDs[i]))[0])
+
+    return envID
+
+def viewSection(width = 800, height = 400, cs = None, dnlay = None,
                 rangeX = None, rangeY = None, linesize = 3, title = 'Cross section'):
     """
     Plot multiple cross-sections data on a graph.
@@ -243,7 +259,7 @@ def viewSection(width = 800, height = 400, cs = None, dnlay = None,
 
     return
 
-def viewSection_Depth(cs = None, IPs = None, dnlay = None, color = None, 
+def viewSection_Depth(cs = None, IPs = None, dnlay = None, color = None,
                       rangeX = None, rangeY = None, linesize = 3, title = 'Cross section'):
     """
     Plot stratal stacking pattern colored by water depth.
@@ -297,12 +313,12 @@ def viewSection_Depth(cs = None, IPs = None, dnlay = None, color = None,
             plt.plot(xi00,cs.secDep[i],'-',color='k',linewidth=0.2)
     plt.plot(xi00,cs.secDep[cs.nz-1],'-',color='k',linewidth=0.7)
     plt.plot(xi00,cs.secDep[0],'-',color='k',linewidth=0.7)
-    plt.xlim( rangeX ) 
+    plt.xlim( rangeX )
     plt.ylim( rangeY )
 
     return
 
-def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=None, 
+def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=None,
                   rangeX = None, rangeY = None, linesize = 3, title = 'Cross section'):
     """
     Plot multiple cross-sections colored by system tracts on a graph.
@@ -672,4 +688,4 @@ class stratalSection:
             self.secDep[k] = np.minimum(secDep, topsec)
             topsec = self.secDep[k]
 
-        return 
+        return
