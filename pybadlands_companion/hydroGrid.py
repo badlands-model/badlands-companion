@@ -584,7 +584,7 @@ class hydroGrid:
         elif val == 'FA':
             IDo = np.where(self.FA == 0.)[0]
             self.FA[IDo] = 1.
-            valData = np.log(self.FA)
+            valData = self.FA
         elif val == 'Z':
             valData = self.Z
         else:
@@ -713,7 +713,7 @@ class hydroGrid:
         elif val == 'FA':
             IDo = np.where(self.FA == 0.)[0]
             self.FA[IDo] = 1.
-            valData = np.log(self.FA)
+            valData = self.FA
             IDo = np.where(self.streamFA == 0.)[0]
             self.streamFA[IDo] = 1.
             valStream = self.streamFA
@@ -843,7 +843,7 @@ class hydroGrid:
         elif xval == 'FA':
             IDo = np.where(self.FAdata == 0.)[0]
             self.FAdata[IDo] = 1.
-            xdata = np.log(self.FAdata)
+            xdata = self.FAdata
         elif xval == 'chi':
             xdata = self.Chidata
         elif xval == 'Z':
@@ -858,7 +858,7 @@ class hydroGrid:
         elif yval == 'FA':
             IDo = np.where(self.FAdata == 0.)[0]
             self.FAdata[IDo] = 1.
-            ydata = np.log(self.FAdata)
+            ydata = self.FAdata
         elif yval == 'chi':
             ydata = self.Chidata
         elif yval == 'Z':
@@ -953,7 +953,7 @@ class hydroGrid:
         elif xval == 'FA':
             IDo = np.where(self.FAdata == 0.)[0]
             self.FAdata[IDo] = 1.
-            xdata = np.log(self.FAdata)
+            xdata = self.FAdata
         elif xval == 'chi':
             xdata = self.Chidata
         elif xval == 'Z':
@@ -968,7 +968,7 @@ class hydroGrid:
         elif yval == 'FA':
             IDo = np.where(self.FAdata == 0.)[0]
             self.FAdata[IDo] = 1.
-            ydata = np.log(self.FAdata)
+            ydata = self.FAdata
         elif yval == 'chi':
             ydata = self.Chidata
         elif yval == 'Z':
@@ -988,7 +988,7 @@ class hydroGrid:
                 elif xval == 'FA':
                     IDo = np.where(tribList[i].FAdata == 0.)[0]
                     tribList[i].FAdata[IDo] = 1.
-                    xd = np.log(tribList[i].FAdata)
+                    xd = tribList[i].FAdata
                 elif xval == 'chi':
                     xd = tribList[i].Chidata
                 elif xval == 'Z':
@@ -1001,7 +1001,7 @@ class hydroGrid:
                 elif yval == 'FA':
                     IDo = np.where(tribList[i].FAdata == 0.)[0]
                     self.FAdata[IDo] = 1.
-                    y1 = np.log(tribList[i].FAdata)
+                    y1 = tribList[i].FAdata
                 elif yval == 'chi':
                     y1 = tribList[i].Chidata
                 elif yval == 'Z':
@@ -1106,7 +1106,7 @@ class hydroGrid:
         elif xval == 'FA':
             IDo = np.where(tribList[self.maintribID].FAdata == 0.)[0]
             self.FAdata[IDo] = 1.
-            xdata = np.log(tribList[self.maintribID].FAdata)
+            xdata = tribList[self.maintribID].FAdata
         elif xval == 'chi':
             xdata = tribList[self.maintribID].Chidata
         elif xval == 'Z':
@@ -1121,7 +1121,7 @@ class hydroGrid:
         elif yval == 'FA':
             IDo = np.where(tribList[self.maintribID].FAdata == 0.)[0]
             self.FAdata[IDo] = 1.
-            ydata = np.log(tribList[self.maintribID].FAdata)
+            ydata = tribList[self.maintribID].FAdata
         elif yval == 'chi':
             ydata = tribList[self.maintribID].Chidata
         elif yval == 'Z':
@@ -1141,7 +1141,7 @@ class hydroGrid:
                     elif xval == 'FA':
                         IDo = np.where(tribList[i].FAdata == 0.)[0]
                         tribList[i].FAdata[IDo] = 1.
-                        xd = np.log(tribList[i].FAdata)
+                        xd = tribList[i].FAdata
                     elif xval == 'chi':
                         xd = tribList[i].Chidata
                     elif xval == 'Z':
@@ -1154,7 +1154,7 @@ class hydroGrid:
                     elif yval == 'FA':
                         IDo = np.where(tribList[i].FAdata == 0.)[0]
                         self.FAdata[IDo] = 1.
-                        y1 = np.log(tribList[i].FAdata)
+                        y1 = tribList[i].FAdata
                     elif yval == 'chi':
                         y1 = tribList[i].Chidata
                     elif yval == 'Z':
