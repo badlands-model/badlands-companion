@@ -160,7 +160,7 @@ class morphoGrid:
         logdis = self.discharge
         IDs = np.where(logdis<1.)
         logdis[IDs] = 1.
-        self.logdischarge = np.log(logdis)
+        self.logdischarge = logdis
 
         return
 
