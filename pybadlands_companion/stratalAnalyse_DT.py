@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 from cmocean import cm
 import colorlover as cl
+from scipy import interpolate
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree
 import xml.etree.ElementTree as ETO
@@ -47,7 +48,8 @@ def readSea(seafile):
 
     return SLtime,sealevel
 
-def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, color = '#6666FF'):
+def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, color = '#6666FF',
+             title = 'view data', xlegend = 'xaxis', ylegend = 'yaxis'):
     """
     Plot multiple data on a graph.
     Parameters
@@ -60,6 +62,12 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
         Figure height.
     variable: linesize
         Requested size for the line.
+    variable: xlegend
+        Legend of the x axis.
+    variable: ylegend
+        Legend of the y axis.
+    variable: title
+        Title of the graph.
     """
     trace = Scatter(
         x=x0,
@@ -74,8 +82,21 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
     )
 
     layout = dict(
+            title=title,
+            font=dict(size=10),
             width=width,
-            height=height
+            height=height,
+            showlegend = False,
+            xaxis=dict(title=xlegend,
+                       ticks='outside',
+                       zeroline=False,
+                       showline=True,
+                       mirror='ticks'),
+            yaxis=dict(title=ylegend,
+                       ticks='outside',
+                       zeroline=False,
+                       showline=True,
+                       mirror='ticks')
             )
 
     fig = Figure(data=[trace], layout=layout)
@@ -123,6 +144,140 @@ def waterDepth(cs = None, envIDs = None):
             IPs[i][j] = np.amin(np.where(waterdep[i]>envIDs[j])[0])
 
     return IPs
+
+def build_shoreTrajectory(x, y, grad, sl, nbout, cTC='rgba(56,110,164,0.8)', cDRC='rgba(60,165,67,0.8)',
+                          cARC='rgba(112,54,127,0.8)', cSTC='rgba(252,149,7,0.8)'):
+    """
+    Automatic delimitation of shoreline trajectory classes.
+    Parameters
+    ----------
+    variable: x: display steps
+
+    variable: y: shoreline position
+
+    variable: sl: sealevel position
+
+    variable: grad: shoreline position gradient
+
+    variable: nbout: number of output steps
+
+    color schema for different classes
+    """
+
+    # Find intersection between line zero and the shoreline gradient trajectory
+    ids = np.argwhere(np.diff(np.sign(grad - np.zeros(len(grad)))) != 0).reshape(-1) + 0
+    # Number of points to consider
+    nbclass = len(ids)
+
+    # Check if there are still some points after the last intersection
+    final = False
+    if ids[-1]<len(grad):
+        nbclass += 1
+        final = True
+    # Build the color list
+    STcolors_ST = []
+
+    ci0 = 0
+    i0 = 0
+    for k in range(nbclass):
+        if k == nbclass-1:
+            if not final:
+                exit
+            else:
+                i1 = nbout
+                ci1 = nbout
+                i2 = -1
+                sl1 = sl[i0]
+                sl2 = sl[-1]
+        else:
+            i1 = ids[k]
+            ci1 = int(x[ids[k]])
+            i2 = ids[k]-1
+            sl1 = sl[i0]
+            sl2 = sl[ids[k]-1]
+        if grad[i2] < 0:
+            for p in range(ci0,ci1):
+                STcolors_ST.append(cTC)
+        elif grad[i2] > 0 and sl1 >= sl2:
+            for p in range(ci0,ci1):
+                STcolors_ST.append(cDRC)
+        elif grad[i2] > 0 and sl1 < sl2:
+            for p in range(ci0,ci1):
+                STcolors_ST.append(cARC)
+        else:
+            for p in range(ci0,ci1):
+                STcolors_ST.append(cSTC)
+        if k < nbclass-1:
+            i0 = ids[k]
+            ci0 = int(x[ids[k]])
+
+    return STcolors_ST
+
+def build_accomSuccession(x, y, grad, nbout, cR='rgba(51,79,217,0.8)', cPA='rgba(252,149,7,0.8)',
+                          cAPD='rgba(15,112,2,0.8)'):
+    """
+    Automatic delimitation of accommodation succession sequence sets.
+    Parameters
+    ----------
+    variable: x: display steps
+
+    variable: y: shoreline position
+
+    variable: grad: shoreline position gradient
+
+    variable: nbout: number of output steps
+
+    color schema for different classes
+    """
+
+    # Find intersection between line zero and the AS curve
+    ids1 = np.argwhere(np.diff(np.sign(y - np.zeros(len(y)))) != 0).reshape(-1) + 0
+    # Find intersection between line zero and the AS gradient
+    ids2 = np.argwhere(np.diff(np.sign(grad - np.zeros(len(y)))) != 0).reshape(-1) + 0
+    # Combine ids together
+    ids = np.concatenate((ids1,ids2))
+    ids.sort(kind='mergesort')
+
+    # Number of points to consider
+    nbclass = len(ids)
+
+    # Check if there are still some points after the last intersection
+    final = False
+    if ids[-1]<len(grad):
+        nbclass += 1
+        final = True
+
+    # Build the color list
+    STcolors_AS = []
+
+    ci0 = 0
+    i0 = 0
+    for k in range(nbclass):
+        if k == nbclass-1:
+            if not final:
+                exit
+            else:
+                i1 = nbout
+                ci1 = nbout
+                i2 = -1
+        else:
+            i1 = ids[k]
+            ci1 = int(x[ids[k]])
+            i2 = ids[k]-1
+        if y[i2-1] >= 0:
+            for p in range(ci0,ci1):
+                STcolors_AS.append(cR)
+        elif y[i2-1] < 0 and grad[i2-1] >= 0:
+            for p in range(ci0,ci1):
+                STcolors_AS.append(cAPD)
+        elif y[i2-1] < 0 and grad[i2-1] < 0:
+            for p in range(ci0,ci1):
+                STcolors_AS.append(cPA)
+        if k < nbclass-1:
+            i0 = ids[k]
+            ci0 = int(x[ids[k]])
+
+    return STcolors_AS
 
 def depthID(cs = None, sealevel = None, envIDs = None):
     """
@@ -256,6 +411,66 @@ def viewSection(width = 800, height = 400, cs = None, dnlay = None,
         )
     fig = Figure(data=data, layout=layout)
     plotly.offline.iplot(fig)
+
+    return
+
+
+def viewSection_Depo(width = 8, height = 5, cs = None, IPs = None, dnlay = None, color = None,
+                      rangeX = None, rangeY = None, linesize = 3, title = 'Cross section'):
+    """
+    Plot stratal stacking pattern colored by deposition depth.
+    Parameters
+    ----------
+    variable: cs
+        Cross-sections dataset.
+    variable: dnlay
+        Layer step to plot the cross-section.
+    variable: colors
+        Colors for different ranges of water depth (i.e. depositional environments).
+    variable: rangeX, rangeY
+        Extent of the cross section plot.
+    variable: linesize
+        Requested size for the line.
+    variable: title
+        Title of the graph.
+    """
+    fig = plt.figure(figsize = (width,height))
+    plt.rc("font", size=10)
+
+    ax = fig.add_subplot(111)
+    layID = []
+    p = 0
+    xi00 = cs.dist
+    # color = ['limegreen','sandybrown','khaki','lightsage','c','dodgerblue']
+    for i in range(0,cs.nz+1,dnlay):
+        if i == cs.nz:
+            i = cs.nz-1
+        layID.append(i)
+        if len(layID) > 1:
+            for j in range(0,int(np.amax(xi00))):
+                if (j<IPs[0][i/dnlay]):
+                    plt.fill_between([xi00[j],xi00[j+1]], [cs.secDep[layID[p-1]][j], cs.secDep[layID[p-1]][j+1]], color='limegreen')
+                elif (j<IPs[1][i/dnlay]):
+                    plt.fill_between([xi00[j],xi00[j+1]], [cs.secDep[layID[p-1]][j], cs.secDep[layID[p-1]][j+1]], color=color[0])
+                elif (j<IPs[2][i/dnlay]):
+                    plt.fill_between([xi00[j],xi00[j+1]], [cs.secDep[layID[p-1]][j], cs.secDep[layID[p-1]][j+1]], color=color[1])
+                elif (j<IPs[3][i/dnlay]):
+                    plt.fill_between([xi00[j],xi00[j+1]], [cs.secDep[layID[p-1]][j], cs.secDep[layID[p-1]][j+1]], color=color[2])
+                elif (j<IPs[4][i/dnlay]):
+                    plt.fill_between([xi00[j],xi00[j+1]], [cs.secDep[layID[p-1]][j], cs.secDep[layID[p-1]][j+1]], color=color[3])
+                elif (j<IPs[5][i/dnlay]):
+                    plt.fill_between([xi00[j],xi00[j+1]], [cs.secDep[layID[p-1]][j], cs.secDep[layID[p-1]][j+1]], color=color[4])
+                else:
+                    plt.fill_between([xi00[j],xi00[j+1]], [cs.secDep[layID[p-1]][j], cs.secDep[layID[p-1]][j+1]], color='teal')
+                    plt.fill_between(xi00, cs.secDep[layID[p]], 0, color='white')
+        p=p+1
+    for i in range(0,cs.nz,dnlay):
+        if i>0:
+            plt.plot(xi00,cs.secDep[i],'-',color='k',linewidth=0.2)
+    plt.plot(xi00,cs.secDep[cs.nz-1],'-',color='k',linewidth=0.7)
+    plt.plot(xi00,cs.secDep[0],'-',color='k',linewidth=0.7)
+    plt.xlim( rangeX )
+    plt.ylim( rangeY )
 
     return
 
@@ -565,10 +780,70 @@ class stratalSection:
         self.secTh = []
         self.secDep = []
         self.secElev = []
-        self.shoreID = []
         self.shoreAccom = []
         self.shoreSed = []
-        self.depoEnd = []
+
+        self.shoreID = None
+        self.shoreElev = None
+        self.accom_shore = None
+        self.sed_shore = None
+        self.depoend = None
+        self.sedflux = None
+
+        self.shoreID_gs = None
+        self.shoreElev_gs = None
+        self.accom_shore_gs = None
+        self.sed_shore_gs = None
+        self.depoend_gs = None
+        self.sedflux_gs = None
+
+        return
+
+    def _buildShoreline(self, cs = None, cs_b = None, sealevel = None, sealevel_b = None):
+
+        shoreID = np.amax(np.where(cs.secDep[cs.nz-1]>=sealevel)[0])
+        shoreElev = cs.secDep[cs.nz-1][shoreID]
+        shoreID_b = np.amax(np.where(cs_b.secDep[cs_b.nz-1]>=sealevel_b)[0])
+        accom = sealevel - cs.secDep[cs_b.nz-1][shoreID_b]
+        sed = cs.secDep[cs.nz-1][shoreID_b] - cs.secDep[cs_b.nz-1][shoreID_b]
+        depoend = np.amax(np.where(cs.secTh[cs.nz-1][shoreID:len(cs.secTh[0])]>0.001)[0]) + shoreID
+        sedflux = 0.
+        for i in range(cs_b.nz-1,cs.nz):
+            sedflux = sedflux + sum(cs.secTh[i][shoreID:,])
+
+        return shoreID, shoreElev, accom, sed, depoend, sedflux
+
+    def buildParameters(self, npts, strat_all, sealevel):
+
+        # Calculate cross-section parameters
+        shoreID = np.zeros(npts)
+        shoreElev = np.zeros(npts)
+        accom_shore = np.zeros(npts)
+        sed_shore = np.zeros(npts)
+        depoend = np.zeros(npts)
+        sedflux = np.zeros(npts)
+
+        shoreID[0], shoreElev[0], accom_shore[0], sed_shore[0], depoend[0], sedflux[0] = self._buildShoreline(cs = strat_all[0],
+                                            cs_b = strat_all[0], sealevel = sealevel[0], sealevel_b = sealevel[0])
+
+        for i in range(1,npts):
+            shoreID[i], shoreElev[i], accom_shore[i], sed_shore[i], depoend[i], sedflux[i] = self._buildShoreline(cs = strat_all[i],
+                                                cs_b = strat_all[i-1], sealevel = sealevel[i], sealevel_b = sealevel[i-1])
+
+        self.shoreID = shoreID
+        self.shoreElev = shoreElev
+        self.accom_shore = accom_shore
+        self.sed_shore = sed_shore
+        self.depoend = depoend
+        self.sedflux = sedflux
+
+        # Gaussian smooth
+        self.shoreID_gs = filters.gaussian_filter1d(shoreID,sigma=1)
+        self.shoreElev_gs = filters.gaussian_filter1d(shoreElev,sigma=1)
+        self.accom_gs = filters.gaussian_filter1d(accom_shore,sigma=1)
+        self.sed_gs = filters.gaussian_filter1d(sed_shore,sigma=1)
+        self.depoend_gs = filters.gaussian_filter1d(depoend,sigma=1)
+        self.sedflux_gs = filters.gaussian_filter1d(sedflux,sigma=1)
 
         return
 
