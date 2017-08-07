@@ -40,7 +40,7 @@ def readSea(seafile):
     Parameters
     ----------
     variable: seafile
-    Absolute path of the sea-lelve data.
+        Absolute path of the sea-lelve data.
     """
 
     df=pd.read_csv(seafile, sep=r'\s+',header=None)
@@ -49,19 +49,19 @@ def readSea(seafile):
     return SLtime,sealevel
 
 def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, color = '#6666FF',
-             title = 'view data', xlegend = 'xaxis', ylegend = 'yaxis'):
+             xlegend = 'xaxis', ylegend = 'yaxis', title = 'view data'):
     """
     Plot multiple data on a graph.
     Parameters
     ----------
     variable: x0, y0
-    Data for plot
-    variable: width
-        Figure width.
-    variable: height
-        Figure height.
+        Data for plot
+    variable: width, height
+        Figure width and height.
     variable: linesize
         Requested size for the line.
+    variable: color
+        
     variable: xlegend
         Legend of the x axis.
     variable: ylegend
@@ -106,44 +106,22 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
 
 def buildShore(cs = None, cs_b = None, sealevel = None, sealevel_b = None):
     """
-    Calculate the shoreline trajectory (shoreID and shoreElev), the change of accommodation (accom)
-    and sedimentation (sed) at shoreline, the end point of each depostional layer (depoend),
-    and sediment flux (sedflux) through time.
+    Calculate the shoreline trajectory (shoreID), the change of accommodation (accom)
+    and sedimentation (sed) at shoreline, the end point of each depostional layer (depoend).
     Parameters
     ----------
     variable: cs, cs_b
-    The cross-section at time t and previous timestep (t-dt)
+        The cross-section at time t and previous timestep (t-dt)
     variable: sealevel, sealevel_b
-    The value of sea-level at time t and previous timestep (t-dt)
+        The value of sea-level at time t and previous timestep (t-dt)
     """
     shoreID = np.amax(np.where(cs.secDep[cs.nz-1]>=sealevel)[0])
-    shoreElev = cs.secDep[cs.nz-1][shoreID]
     shoreID_b = np.amax(np.where(cs_b.secDep[cs_b.nz-1]>=sealevel_b)[0])
     accom = sealevel - cs.secDep[cs_b.nz-1][shoreID_b]
     sed = cs.secDep[cs.nz-1][shoreID_b] - cs.secDep[cs_b.nz-1][shoreID_b]
     depoend = np.amax(np.where(cs.secTh[cs.nz-1][shoreID_b:len(cs.secTh[0])]>0.001)[0]) + shoreID_b
-    sedflux = 0.
-    for i in range(cs_b.nz-1,cs.nz):
-        sedflux = sedflux + sum(cs.secTh[i][shoreID:,])
 
-    return shoreID, shoreElev, accom, sed, depoend, sedflux
-
-def waterDepth(cs = None, envIDs = None):
-    """
-    Calculate the position of different depositional environments.
-    Parameters
-    ----------
-    variable: envIDs
-    range of water depth of each depostional environment.
-    """
-    waterdep = []
-    IPs = np.zeros((cs.nz, len(envIDs)))
-    for i in range(0,cs.nz):
-        for j in range(len(envIDs)):
-            waterdep.append(-cs.secElev[i])
-            IPs[i][j] = np.amin(np.where(waterdep[i]>envIDs[j])[0])
-
-    return IPs
+    return shoreID, accom, sed, depoend
 
 def build_shoreTrajectory(x, y, grad, sl, nbout, cTC='rgba(56,110,164,0.8)', cDRC='rgba(60,165,67,0.8)',
                           cARC='rgba(112,54,127,0.8)', cSTC='rgba(252,149,7,0.8)'):
@@ -151,15 +129,16 @@ def build_shoreTrajectory(x, y, grad, sl, nbout, cTC='rgba(56,110,164,0.8)', cDR
     Automatic delimitation of shoreline trajectory classes.
     Parameters
     ----------
-    variable: x: display steps
-
-    variable: y: shoreline position
-
-    variable: sl: sealevel position
-
-    variable: grad: shoreline position gradient
-
-    variable: nbout: number of output steps
+    variable: x
+        display steps
+    variable: y
+        shoreline position
+    variable: grad
+        shoreline position gradient
+    variable: sl
+        sealevel position
+    variable: nbout
+        number of output steps
 
     color schema for different classes
     """
@@ -219,13 +198,14 @@ def build_accomSuccession(x, y, grad, nbout, cR='rgba(51,79,217,0.8)', cPA='rgba
     Automatic delimitation of accommodation succession sequence sets.
     Parameters
     ----------
-    variable: x: display steps
-
-    variable: y: shoreline position
-
-    variable: grad: shoreline position gradient
-
-    variable: nbout: number of output steps
+    variable: x
+        display steps
+    variable: y
+        AS curve
+    variable: grad
+        shoreline position gradient
+    variable: nbout
+        number of output steps
 
     color schema for different classes
     """
@@ -317,10 +297,6 @@ def viewSection(width = 800, height = 400, cs = None, dnlay = None,
         Title of the graph.
     """
     nlay = len(cs.secDep)
-    #colorrgb = []
-    #cmap=cm.delta
-    #for n in range(nlay):
-        #colorrgb.append(cmap(n/float(nlay)))
     colors = cl.scales['9']['div']['BrBG']
     hist = cl.interp( colors, nlay )
     colorrgb = cl.to_rgb( hist )
@@ -484,7 +460,7 @@ def viewSection_Depth(cs = None, IPs = None, dnlay = None, color = None,
         Cross-sections dataset.
     variable: dnlay
         Layer step to plot the cross-section.
-    variable: colors
+    variable: color
         Colors for different ranges of water depth (i.e. depositional environments).
     variable: rangeX, rangeY
         Extent of the cross section plot.
@@ -545,6 +521,8 @@ def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=Non
         Figure height.
     variable: cs
         Cross-sections dataset.
+    variable: dnlay
+        Layer step to plot the cross-section.
     variable: colors
         System tract color scale.
     variable: rangeX, rangeY
@@ -645,95 +623,143 @@ def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=Non
 
     return
 
-def viewWheeler(width = 800, height = 400, cs = None, time = None, colors = None,
-                    rangeE=None, rangeX = None, rangeY = None, contourdx = 50,
-                    title = 'Wheeler diagram'):
+def viewWheeler(width = 800, height = 400, time = None, rangeE = None, shoreID = None, 
+                dnlay = None, npts = None, color = None, rangeX = None, rangeY = None, 
+                linesize = 3, title = 'Wheeler Diagram', xlegend = 'xaxis', ylegend = 'yaxis'):
     """
     Plot wheeler diagram colored by deposition environment on a graph.
     Parameters
     ----------
-    variable: width
-        Figure width.
-    variable: height
-        Figure height.
-    variable: cs
-        Cross-sections dataset.
+    variable: width, height
+        Figure width and height.
     variable: time
-        Simulation time array dataset.
-    variable: colors
-        Depositional environments color scale.
+        Stacking time of each extracted layer.
     variable: rangeE
         Depositional environments extent.
+    variable: shoreID
+        Shoreline position through time.
+    variable: dnlay, npts
+        Layer step to plot the Wheeler diagram, number of extracted outfiles.
+    variable: color
+        Depositional environments color scale.
     variable: rangeX, rangeY
         Extent of the cross section plot.
-    variable: contourdx
-        Distance between 2 contours.
+    variable: linesize
+        Requested size for the line.
     variable: title
         Title of the graph.
+    variable: xlegend
+        Legend of the x axis.
+    variable: ylegend
+        Legend of the y axis.
     """
 
-    smoothelev = gaussian_filter(cs.secElev, sigma=2)
-    emin = rangeE[0][0]
-    emax = rangeE[0][1]
-    for k in range(len(colors)):
-        tmp1 = rangeE[k][0]
-        tmp2 = rangeE[k][1]
-        emin = min(emin,tmp1)
-        emax = max(emax,tmp2)
-    colorscale = []
+    fig = plt.figure(figsize = (width,height))
+    plt.rc("font", size=10)
+    
+    patch_handles = []
+    for i, d in enumerate(rangeE):
+        patch_handles.append(plt.barh(time,d,color=color[i],align='edge',left=d, height=dnlay/10., edgecolor = "none"))
+    
+    for j in range(0,npts): 
+        plt.axhline(time[j], color='k', linewidth=0.5)
+        
+    plt.plot(shoreID, time,'ko',markersize=3)
+    #
+    plt.xlim(rangeX)
+    plt.ylim(rangeY)
+    plt.xlabel(xlegend)
+    plt.ylabel(ylegend)
+    #     
+    plt.title(title)
+    
+    return
 
-    for k in range(len(colors)):
-        tmp = (rangeE[k][0]-emin)/(emax-emin)
-        list = [tmp,colors[k]]
-        colorscale.append(list)
-    colorscale.append([1., 'rgb(250,250,250)'])
+def getStack(cs = None, posit = None, envIDs = None, color = None, dn = None):
+    """
+    Compute vertical stacking parameters.
+    variable: cs
+        Cross-sections dataset.
+    variable: posit
+        Position of wells.
+    variable: envIDs
+        Depositional environment.
+    variable: colors
+        Depositional environments color scale.
+    variable: dn
+        Number of output steps.
+    """
+    color_fill = []
+    for i in range(len(posit)):
+        for j in range(0,cs.nz,dn):
+            if ((cs.secElev[j][posit[i]]) > (- envIDs[0])):
+                color_fill.append(color[0])
+            elif (cs.secElev[j][posit[i]]) > (- envIDs[1]):
+                color_fill.append(color[0])
+            elif (cs.secElev[j][posit[i]]) > (- envIDs[2]):
+                color_fill.append(color[1])
+            elif (cs.secElev[j][posit[i]]) > (- envIDs[3]):
+                color_fill.append(color[2])
+            elif (cs.secElev[j][posit[i]]) > (- envIDs[4]):
+                color_fill.append(color[3])
+            elif (cs.secElev[j][posit[i]]) > (- envIDs[5]):
+                color_fill.append(color[4])
+            else:
+                color_fill.append(color[5])          
+    
+    nbout = cs.nz
+    layth = []
+    for m in range(len(posit)):
+        nz = cs.nz-1
+        layth.append(cs.secDep[nz][posit[m]])
+        for n in range(1,int(nbout/dn)):
+            if nz-n*dn >= 0:
+                layth.append(-sum(cs.secTh[(nz-n*dn):(nz-(n-1)*dn)])[posit[m]])
+    
+    colorFill = np.reshape(color_fill, (len(posit), int(nbout/dn)))
+    layTh = np.reshape(layth, (len(posit),  int(nbout/dn)))
+    
+    return colorFill, layTh
 
-    data = Data([
-        Contour(
-            x=cs.dist,
-            y=time,
-            z=smoothelev,
-            line=dict(smoothing=0.8,color='black' ,width=0.5),
-            colorscale=colorscale,
-            autocontour=False,
-            contours=dict(
-                start=emin,
-                end=emax,
-                size=contourdx,
-            ),
-            colorbar=dict(
-                thickness=25,
-                thicknessmode='pixels',
-                title='Elevation [m]',
-                titleside='right',
-                len=0.9,
-                lenmode='fraction',
-                outlinewidth=0
-            )
-        )
-    ])
+def viewStack(width = 800, height = 400, layTh = None, colorFill = None):
+    """
+    Plot wheeler diagram colored by deposition environment on a graph.
+    Parameters
+    ----------
+    variable: width, height
+        Figure width and height.
+    variable: layTh
+        Layer thickness for each wells.
+    variable: colorFill
+        Layer environment color for each wells.
+    """
 
-    layout = dict(title=title,
-                font=dict(size=10),
-                width=width,
-                height=height,
-                showlegend = False,
-                xaxis=dict(title='distance [m]',
-                            range=rangeX,
-                            ticks='outside',
-                            zeroline=False,
-                            showline=True,
-                            mirror='ticks'),
-                yaxis=dict(title='Time [year]',
-                            range=rangeY,
-                            ticks='outside',
-                            zeroline=False,
-                            showline=True,
-                            mirror='ticks')
-    )
-    fig = Figure(data=data, layout=layout)
-    plotly.offline.iplot(fig)
+    fig = plt.figure(figsize = (width,height))
+    plt.rc("font", size=10)
+    
+    ax = fig.add_axes([0.2,0.06,0.82,0.91])
 
+    data = layTh
+    for k in range(len(data)):
+        bottom = np.cumsum(data[k], axis=0)
+        colors = np.fliplr([colorFill[k]])[0]
+        plt.bar(2*k, data[k][0], color = 'w', edgecolor='lightgrey', hatch = '/')
+        for j in range(1, data[k].shape[0]):
+            plt.bar(2*k, data[k][j], color=colors[j], edgecolor='black', bottom=bottom[j-1])
+
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.spines['bottom'].set_color('none')
+    ax.axes.get_xaxis().set_visible(False)
+    ax.tick_params(axis='both', labelsize=8)
+    ax.yaxis.set_ticks_position('left')
+    
+    #plt.xlim(-0.4,10)
+    #plt.ylim(-800,0)
+
+    plt.ylabel('Elevation (m)',fontsize=10)
+    #plt.yticks(fontsize=10)
+    
     return
 
 class stratalSection:
@@ -780,70 +806,53 @@ class stratalSection:
         self.secTh = []
         self.secDep = []
         self.secElev = []
-        self.shoreAccom = []
-        self.shoreSed = []
 
         self.shoreID = None
-        self.shoreElev = None
         self.accom_shore = None
         self.sed_shore = None
         self.depoend = None
-        self.sedflux = None
 
         self.shoreID_gs = None
-        self.shoreElev_gs = None
         self.accom_shore_gs = None
         self.sed_shore_gs = None
         self.depoend_gs = None
-        self.sedflux_gs = None
 
         return
 
     def _buildShoreline(self, cs = None, cs_b = None, sealevel = None, sealevel_b = None):
 
         shoreID = np.amax(np.where(cs.secDep[cs.nz-1]>=sealevel)[0])
-        shoreElev = cs.secDep[cs.nz-1][shoreID]
         shoreID_b = np.amax(np.where(cs_b.secDep[cs_b.nz-1]>=sealevel_b)[0])
         accom = sealevel - cs.secDep[cs_b.nz-1][shoreID_b]
         sed = cs.secDep[cs.nz-1][shoreID_b] - cs.secDep[cs_b.nz-1][shoreID_b]
         depoend = np.amax(np.where(cs.secTh[cs.nz-1][shoreID:len(cs.secTh[0])]>0.001)[0]) + shoreID
-        sedflux = 0.
-        for i in range(cs_b.nz-1,cs.nz):
-            sedflux = sedflux + sum(cs.secTh[i][shoreID:,])
 
-        return shoreID, shoreElev, accom, sed, depoend, sedflux
+        return shoreID, accom, sed, depoend
 
     def buildParameters(self, npts, strat_all, sealevel):
 
         # Calculate cross-section parameters
         shoreID = np.zeros(npts)
-        shoreElev = np.zeros(npts)
         accom_shore = np.zeros(npts)
         sed_shore = np.zeros(npts)
         depoend = np.zeros(npts)
-        sedflux = np.zeros(npts)
 
-        shoreID[0], shoreElev[0], accom_shore[0], sed_shore[0], depoend[0], sedflux[0] = self._buildShoreline(cs = strat_all[0],
+        shoreID[0], accom_shore[0], sed_shore[0], depoend[0] = self._buildShoreline(cs = strat_all[0],
                                             cs_b = strat_all[0], sealevel = sealevel[0], sealevel_b = sealevel[0])
 
         for i in range(1,npts):
-            shoreID[i], shoreElev[i], accom_shore[i], sed_shore[i], depoend[i], sedflux[i] = self._buildShoreline(cs = strat_all[i],
-                                                cs_b = strat_all[i-1], sealevel = sealevel[i], sealevel_b = sealevel[i-1])
+            shoreID[i], accom_shore[i], sed_shore[i], depoend[i],  = self._buildShoreline(cs = strat_all[i], cs_b = strat_all[i-1], sealevel = sealevel[i], sealevel_b = sealevel[i-1])
 
         self.shoreID = shoreID
-        self.shoreElev = shoreElev
         self.accom_shore = accom_shore
         self.sed_shore = sed_shore
         self.depoend = depoend
-        self.sedflux = sedflux
 
         # Gaussian smooth
         self.shoreID_gs = filters.gaussian_filter1d(shoreID,sigma=1)
-        self.shoreElev_gs = filters.gaussian_filter1d(shoreElev,sigma=1)
         self.accom_gs = filters.gaussian_filter1d(accom_shore,sigma=1)
         self.sed_gs = filters.gaussian_filter1d(sed_shore,sigma=1)
         self.depoend_gs = filters.gaussian_filter1d(depoend,sigma=1)
-        self.sedflux_gs = filters.gaussian_filter1d(sedflux,sigma=1)
 
         return
 
