@@ -141,17 +141,24 @@ class morphoGrid:
         tree = cKDTree(XY)
         distances, indices = tree.query(xyi, k=3)
         z_vals = z[indices][:,:,0]
-        zi = np.average(z_vals,weights=(1./distances), axis=1)
         d_vals = d[indices][:,:,0]
-        di = np.average(d_vals,weights=(1./distances), axis=1)
         c_vals = c[indices][:,:,0]
-        ci = np.average(c_vals,weights=(1./distances), axis=1)
+
+        zi = np.zeros(len(xyi))
+        di = np.zeros(len(xyi))
+        ci = np.zeros(len(xyi))
+
+        onIDs = np.where(distances[:,0] > 0)[0]
+        if len(onIDs) > 0:
+            zi[onIDs] = np.average(z_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
+            di[onIDs] = np.average(d_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
+            ci[onIDs] = np.average(c_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
 
         onIDs = np.where(distances[:,0] == 0)[0]
         if len(onIDs) > 0:
-            zi[onIDs] = z[indices[onIDs,0]]
-            di[onIDs] = d[indices[onIDs,0]]
-            ci[onIDs] = c[indices[onIDs,0]]
+            zi[onIDs] = z[indices[onIDs,0],0]
+            di[onIDs] = d[indices[onIDs,0],0]
+            ci[onIDs] = c[indices[onIDs,0],0]
 
         self.z = np.reshape(zi,(self.ny,self.nx))
         self.discharge = np.reshape(di,(self.ny,self.nx))
