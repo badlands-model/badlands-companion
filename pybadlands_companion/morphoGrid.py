@@ -143,18 +143,17 @@ class morphoGrid:
         z_vals = z[indices][:,:,0]
         d_vals = d[indices][:,:,0]
         c_vals = c[indices][:,:,0]
-
+        
         zi = np.zeros(len(xyi))
         di = np.zeros(len(xyi))
         ci = np.zeros(len(xyi))
-
         onIDs = np.where(distances[:,0] > 0)[0]
-        if len(onIDs) > 0:
-            zi[onIDs] = np.average(z_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
-            di[onIDs] = np.average(d_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
-            ci[onIDs] = np.average(c_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
+        zi[onIDs] = np.average(z_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
+        di[onIDs] = np.average(d_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
+        ci[onIDs] = np.average(c_vals[onIDs,:],weights=(1./distances[onIDs,:]), axis=1)
 
         onIDs = np.where(distances[:,0] == 0)[0]
+        
         if len(onIDs) > 0:
             zi[onIDs] = z[indices[onIDs,0],0]
             di[onIDs] = d[indices[onIDs,0],0]
