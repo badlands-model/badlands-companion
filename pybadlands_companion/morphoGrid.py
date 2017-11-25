@@ -250,8 +250,8 @@ class morphoGrid:
         """
 
         # Assign boundary conditions
-        if self.Zbc == None:
-            self.Zbc = self._assignBCs()
+        if self.Zbc is None:
+            self._assignBCs()
 
         # Neighborhood definition
         # z1     z2     z3
