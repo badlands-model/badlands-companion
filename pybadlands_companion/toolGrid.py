@@ -296,7 +296,8 @@ class toolGrid:
 
         if tfile == 'etopo1':
             #thredds = 'http://www.ngdc.noaa.gov/thredds/dodsC/relief/ETOPO1/thredds/ETOPO1_Bed_g_gmt4.nc'
-            thredds = 'http://opendap.deltares.nl/thredds/dodsC/opendap/deltares/delftdashboard/bathymetry/etopo1/etopo1.nc'
+            thredds = 'http://dl.tpac.org.au/thredds/dodsC/bathymetry/ETOPO/etopo1/ETOPO1_Bed_g_gmt4.nc'
+            #thredds = 'http://opendap.deltares.nl/thredds/dodsC/opendap/deltares/delftdashboard/bathymetry/etopo1/etopo1.nc'
         else:
             raise RuntimeError('ETOPO1 is the only dataset available for now.')
 
