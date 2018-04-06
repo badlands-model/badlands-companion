@@ -17,7 +17,7 @@ Notebooks environment will not be the best option for large landscape models and
 mpirun -np 400 python runLEC.py 
 ```
 
-The tool can be used to compute the LEC for any landscape and series of function are provided to extract output data directly from pyBadlands model. 
+The tool can be used to compute the LEC for any landscape file (X,Y,Z) and IPython functions are provided to extract output data directly from pyBadlands model. 
 
 ***
 
