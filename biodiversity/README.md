@@ -1,5 +1,7 @@
 # Biodiversity metric based on landscape elevational connectivity 
 
+[![DOI](https://zenodo.org/badge/54424984.svg)](https://zenodo.org/badge/latestdoi/54424984)
+
 This folder contains notebooks to compute **landscape elevational connectivity** described in Bertuzzo et al. (2016) using a parallel LECmetrics python code. 
 
 ***
