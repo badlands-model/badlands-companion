@@ -1,4 +1,5 @@
 # pyBadlands-Companion
+[![DOI](https://zenodo.org/badge/54424984.svg)](https://zenodo.org/badge/latestdoi/54424984)
 
 ## Installation
 
