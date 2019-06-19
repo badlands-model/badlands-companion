@@ -220,7 +220,7 @@ class toolGeo:
         if zmax == None:
             zmax = self.zi.max()
 
-        data = Data([ Surface( x=self.x, y=self.y, z=zData, colorscale='YIGnBu' ) ])
+        data = Data([ Surface( x=self.Xgrid, y=self.Ygrid, z=zData, colorscale='YIGnBu' ) ])
 
         layout = Layout(
             title='Export Grid',
