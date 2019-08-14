@@ -280,13 +280,13 @@ class toolSea:
             markersize = 0.001
             width = fsize[0]*100
             height = fsize[1]*100
-            data = Data([
+            data = [
                 Scatter(
                     x=self.sl1,
                     y=self.time,
                     fill= None,
                     mode='lines',
-                    line=Line(color='transparent'),
+                    line=dict(color='rgba(250, 250, 250, 0.)'),
                     showlegend=False,
                     ),
                 Scatter(
@@ -294,7 +294,7 @@ class toolSea:
                     y=self.time,
                     fill='tonextx',
                     fillcolor='rgba(68, 68, 68, 0.1)',
-                    line=Line(color='transparent'),
+                    line=dict(color='rgba(250, 250, 250, 0.)'),
                     showlegend=False,
                     ),
                 Scatter(
@@ -318,7 +318,7 @@ class toolSea:
                             ),
                         )
                     ),
-                ])
+                ]
             layout = dict(
                 title=title,
                 width=width,

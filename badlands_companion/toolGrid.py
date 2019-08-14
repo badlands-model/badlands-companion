@@ -220,9 +220,9 @@ class toolGrid:
         levels = pl.array(levels, dtype='float')
         L = (levels-levels[0])/(levels[-1]-levels[0])
 
-        R = [(L[i], A[i,0], A[i,0]) for i in xrange(nlev)]
-        G = [(L[i], A[i,1], A[i,1]) for i in xrange(nlev)]
-        B = [(L[i], A[i,2], A[i,2]) for i in xrange(nlev)]
+        R = [(L[i], A[i,0], A[i,0]) for i in range(nlev)]
+        G = [(L[i], A[i,1], A[i,1]) for i in range(nlev)]
+        B = [(L[i], A[i,2], A[i,2]) for i in range(nlev)]
         cdict = dict(red=tuple(R),green=tuple(G),blue=tuple(B))
 
         return matplotlib.colors.LinearSegmentedColormap(
@@ -497,19 +497,19 @@ class toolGrid:
         if zmax == None:
             zmax = self.zi.max()
 
-        data = Data([ Surface( x=self.xi[0,:], y=self.yi[:,0], z=self.zi, colorscale='Earth')])
+        data = [ Surface( x=self.xi[0,:], y=self.yi[:,0], z=self.zi, colorscale='Earth')]
 
         layout = Layout(
             title = title,
             autosize=True,
             width=width,
             height=height,
-            scene=Scene(
-                zaxis=ZAxis(range=[zmin, zmax],autorange=False,nticks=10, \
+            scene=dict(
+                zaxis=dict(range=[zmin, zmax],autorange=False,nticks=10, \
                             gridcolor='rgb(255, 255, 255)',gridwidth=2,zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
-                xaxis=XAxis(nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2, \
+                xaxis=dict(nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2, \
                             zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
-                yaxis=YAxis(nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2, \
+                yaxis=dict(nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2, \
                             zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
                 bgcolor="rgb(244, 244, 248)"
             )

@@ -25,26 +25,19 @@ class stratalMesh:
     Class for creating stratigraphic mesh from Badlands outputs.
     """
 
-    def __init__(self, folder=None, ncpus=1):
+    def __init__(self, folder=None):
         """
-        Initialization function which takes the folder path to Badlands outputs
-        and the number of CPUs used to run the simulation.
+        Initialization function which takes the folder path to Badlands outputs.
 
         Parameters
         ----------
         variable : folder
             Folder path to Badlands outputs.
-        variable: ncpus
-            Number of CPUs used to run the simulation.
         """
 
         self.folder = folder
         if not os.path.isdir(folder):
             raise RuntimeError('The given folder cannot be found or the path is incomplete.')
-
-        self.ncpus = ncpus
-        if ncpus > 1:
-            raise RuntimeError('Multi-processors function not implemented yet!')
 
         self.x = None
         self.y = None
@@ -75,17 +68,15 @@ class stratalMesh:
 
         self.timestep = timestep
 
-        for i in range(0, self.ncpus):
-            df = h5py.File('%s/sed.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
-            coords = np.array((df['/coords']))
-            layDepth = np.array((df['/layDepth']))
-            layElev = np.array((df['/layElev']))
-            layThick = np.array((df['/layThick']))
-            if i == 0:
-                x, y = np.hsplit(coords, 2)
-                dep = layDepth
-                elev = layElev
-                th = layThick
+        df = h5py.File('%s/sed.time%s.hdf5'%(self.folder, timestep), 'r')
+        coords = np.array((df['/coords']))
+        layDepth = np.array((df['/layDepth']))
+        layElev = np.array((df['/layElev']))
+        layThick = np.array((df['/layThick']))
+        x, y = np.hsplit(coords, 2)
+        dep = layDepth
+        elev = layElev
+        th = layThick
 
         self.dx = x[1]-x[0]
         self.x = x

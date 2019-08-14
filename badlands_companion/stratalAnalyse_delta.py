@@ -61,7 +61,7 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
     variable: linesize
         Requested size for the line.
     variable: color
-        
+
     variable: xlegend
         Legend of the x axis.
     variable: ylegend
@@ -74,7 +74,7 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
         y=y0,
         mode='lines',
         line=dict(
-            shape='line',
+            shape='spline',
             color = color,
             width = linesize
         ),
@@ -253,12 +253,12 @@ def depthID(cs = None, sealevel = None, envIDs = None, side = 'left'):
     variable: side
         Which side of the cross-section: 'left' or 'right'.
     """
-    
+
     if side == 'left':
         envID = np.zeros(len(envIDs))
         for i in range(len(envIDs)):
             envID[i] = np.amin(np.where((cs.secDep[cs.nz-1]) > (sealevel - envIDs[i]))[0])
-    
+
     if side == 'right':
         envID = np.zeros(len(envIDs))
         for i in range(len(envIDs)):
@@ -300,7 +300,7 @@ def viewSection(width = 800, height = 400, cs = None, dnlay = None,
         y=cs.secDep[0],
         mode='lines',
         line=dict(
-            shape='line',
+            shape='spline',
             width = linesize+2,
             color = 'rgb(0, 0, 0)'
         )
@@ -313,7 +313,7 @@ def viewSection(width = 800, height = 400, cs = None, dnlay = None,
             y=cs.secDep[i],
             mode='lines',
             line=dict(
-                shape='line',
+                shape='spline',
                 width = linesize,
                 color = 'rgb(0,0,0)'
             ),
@@ -328,7 +328,7 @@ def viewSection(width = 800, height = 400, cs = None, dnlay = None,
         y=cs.secDep[nlay-1],
         mode='lines',
         line=dict(
-            shape='line',
+            shape='spline',
             width = linesize+2,
             color = 'rgb(0, 0, 0)'
         ),
@@ -342,7 +342,7 @@ def viewSection(width = 800, height = 400, cs = None, dnlay = None,
         y=cs.secDep[0],
         mode='lines',
         line=dict(
-            shape='line',
+            shape='spline',
             width = linesize+2,
             color = 'rgb(0, 0, 0)'
         )
@@ -414,7 +414,7 @@ def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=Non
         y=cs.secDep[0],
         mode='lines',
         line=dict(
-            shape='line',
+            shape='spline',
             width = linesize+2,
             color = 'rgb(0, 0, 0)'
         )
@@ -427,7 +427,7 @@ def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=Non
             y=cs.secDep[i],
             mode='lines',
             line=dict(
-                shape='line',
+                shape='spline',
                 width = linesize,
                 color = 'rgb(0,0,0)'
             ),
@@ -442,7 +442,7 @@ def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=Non
         y=cs.secDep[nlay-1],
         mode='lines',
         line=dict(
-            shape='line',
+            shape='spline',
             width = linesize+2,
             color = 'rgb(0, 0, 0)'
         ),
@@ -456,7 +456,7 @@ def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=Non
         y=cs.secDep[0],
         mode='lines',
         line=dict(
-            shape='line',
+            shape='spline',
             width = linesize+2,
             color = 'rgb(0, 0, 0)'
         )
@@ -495,8 +495,8 @@ def viewSectionST(width = 800, height = 400, cs = None, dnlay = None, colors=Non
 
     return
 
-def viewWheeler(width = 800, height = 400, time = None, rangeE = None, shoreID = None, 
-                height_bar = None, npts = None, color = None, rangeX = None, rangeY = None, 
+def viewWheeler(width = 800, height = 400, time = None, rangeE = None, shoreID = None,
+                height_bar = None, npts = None, color = None, rangeX = None, rangeY = None,
                 linesize = 3, title = 'Wheeler Diagram', xlegend = 'xaxis', ylegend = 'yaxis'):
     """
     Plot wheeler diagram colored by deposition environment on a graph.
@@ -528,25 +528,25 @@ def viewWheeler(width = 800, height = 400, time = None, rangeE = None, shoreID =
 
     fig = plt.figure(figsize = (width,height))
     plt.rc("font", size=9)
-    
+
     patch_handles = []
     left = np.zeros(rangeE.shape[1])
     for i, d in enumerate(rangeE):
         patch_handles.append(plt.barh(time,d,color=color[i],align='center',left=left, height=height_bar, edgecolor = "none"))
         left += d
-    
-    for j in range(0,npts): 
+
+    for j in range(0,npts):
         plt.axhline(time[j], color='k', linewidth=0.5)
-        
+
     plt.plot(shoreID, time,'ko',markersize=3)
     #
     plt.xlim(rangeX)
     plt.ylim(rangeY)
     plt.xlabel(xlegend)
     plt.ylabel(ylegend)
-    #     
+    #
     plt.title(title)
-    
+
     return
 
 class stratalSection:
@@ -554,26 +554,19 @@ class stratalSection:
     Class for creating stratigraphic cross-sections from Badlands outputs.
     """
 
-    def __init__(self, folder=None, ncpus=1):
+    def __init__(self, folder=None):
         """
-        Initialization function which takes the folder path to Badlands outputs
-        and the number of CPUs used to run the simulation.
+        Initialization function which takes the folder path to Badlands outputs.
 
         Parameters
         ----------
         variable : folder
             Folder path to Badlands outputs.
-        variable: ncpus
-            Number of CPUs used to run the simulation.
         """
 
         self.folder = folder
         if not os.path.isdir(folder):
             raise RuntimeError('The given folder cannot be found or the path is incomplete.')
-
-        self.ncpus = ncpus
-        if ncpus > 1:
-            raise RuntimeError('Multi-processors function not implemented yet!')
 
         self.x = None
         self.y = None
@@ -594,20 +587,20 @@ class stratalSection:
         self.secDep = []
         self.secElev = []
 
-        # right side 
+        # right side
         self.shoreID_r = None
         self.accom_r = None
         self.sed_r = None
         self.depoend_r = None
-        
+
         # left side
         self.shoreID_l = None
         self.accom_l = None
         self.sed_l = None
         self.depoend_l = None
-        
+
         return
-    
+
     def _buildShoreline(self, cs = None, cs_b = None, sealevel = None, sealevel_b = None, style = 'delta'):
         """
         Calculate the shoreline trajectory (shoreID), the change of accommodation (accom)
@@ -621,7 +614,7 @@ class stratalSection:
         variable : style
             Model style, can be 'delta' or 'basin'.
         """
-        
+
         if style == 'basin':
             # right side
             shoreID = np.amax(np.where(cs.secDep[cs.nz-1]<=sealevel)[0])
@@ -629,14 +622,14 @@ class stratalSection:
             accom = sealevel - cs.secDep[cs_b.nz-1][shoreID_b]
             sed = cs.secDep[cs.nz-1][shoreID_b] - cs.secDep[cs_b.nz-1][shoreID_b]
             depoend = 0
-        
+
             # left side
             shoreID1 = np.amin(np.where(cs.secDep[cs.nz-1]<=sealevel)[0])
             shoreID1_b = np.amin(np.where(cs_b.secDep[cs_b.nz-1]<=sealevel_b)[0])
             accom1 = sealevel - cs.secDep[cs_b.nz-1][shoreID1_b]
             sed1 = cs.secDep[cs.nz-1][shoreID1_b] - cs.secDep[cs_b.nz-1][shoreID1_b]
             depoend1 = 0
-            
+
         if style == 'delta':
             # right side
             shoreID = np.amax(np.where(cs.secDep[cs.nz-1]>=sealevel)[0])
@@ -644,7 +637,7 @@ class stratalSection:
             accom = sealevel - cs.secDep[cs_b.nz-1][shoreID_b]
             sed = cs.secDep[cs.nz-1][shoreID_b] - cs.secDep[cs_b.nz-1][shoreID_b]
             depoend = np.amax(np.where(cs.secTh[cs.nz-1][shoreID:len(cs.secTh[0])]>0.001)[0]) + shoreID
-        
+
             # left side
             shoreID1 = np.amin(np.where(cs.secDep[cs.nz-1]>=sealevel)[0])
             shoreID1_b = np.amin(np.where(cs_b.secDep[cs_b.nz-1]>=sealevel_b)[0])
@@ -675,23 +668,23 @@ class stratalSection:
         accom_r = np.zeros(npts)
         sed_r = np.zeros(npts)
         depoend_r = np.zeros(npts)
-        
+
         shoreID_l = np.zeros(npts)
         accom_l = np.zeros(npts)
         sed_l = np.zeros(npts)
         depoend_l = np.zeros(npts)
-        
+
         # time 0
         shoreID_r[0], accom_r[0], sed_r[0], depoend_r[0], shoreID_l[0], accom_l[0], sed_l[0], depoend_l[0] = self._buildShoreline(cs = strat_all[0], cs_b = strat_all[0], sealevel = sealevel[0], sealevel_b = sealevel[0], style = style)
         # time 1-npts
         for i in range(1,npts):
             shoreID_r[i], accom_r[i], sed_r[i], depoend_r[i], shoreID_l[i], accom_l[i], sed_l[i], depoend_l[i]  = self._buildShoreline(cs = strat_all[i], cs_b = strat_all[i-1], sealevel = sealevel[i], sealevel_b = sealevel[i-1], style = style)
-            
+
         self.shoreID_r = filters.gaussian_filter1d(shoreID_r, sigma=gfilter)
         self.accom_r = filters.gaussian_filter1d(accom_r, sigma=gfilter)
         self.sed_r = filters.gaussian_filter1d(sed_r, sigma=gfilter)
         self.depoend_r = filters.gaussian_filter1d(depoend_r, sigma=gfilter)
-        
+
         self.shoreID_l = filters.gaussian_filter1d(shoreID_l, sigma=gfilter)
         self.accom_l = filters.gaussian_filter1d(accom_l, sigma=gfilter)
         self.sed_l = filters.gaussian_filter1d(sed_l, sigma=gfilter)
@@ -708,18 +701,16 @@ class stratalSection:
             Time step to load.
         """
 
-        for i in range(0, self.ncpus):
-            df = h5py.File('%s/sed.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
-            #print(list(df.keys()))
-            coords = np.array((df['/coords']))
-            layDepth = np.array((df['/layDepth']))
-            layElev = np.array((df['/layElev']))
-            layThick = np.array((df['/layThick']))
-            if i == 0:
-                x, y = np.hsplit(coords, 2)
-                dep = layDepth
-                elev = layElev
-                th = layThick
+        df = h5py.File('%s/sed.time%s.hdf5'%(self.folder, timestep), 'r')
+        #print(list(df.keys()))
+        coords = np.array((df['/coords']))
+        layDepth = np.array((df['/layDepth']))
+        layElev = np.array((df['/layElev']))
+        layThick = np.array((df['/layThick']))
+        x, y = np.hsplit(coords, 2)
+        dep = layDepth
+        elev = layElev
+        th = layThick
 
         self.dx = x[1]-x[0]
         self.x = x

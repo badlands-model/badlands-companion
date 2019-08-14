@@ -60,19 +60,15 @@ class hydroGrid:
     Class for analysing hydrometrics from Badlands outputs.
     """
 
-    def __init__(self, folder=None, ncpus=1, ptXY=None):
+    def __init__(self, folder=None, ptXY=None):
         """
-        Initialization function which takes the folder path to Badlands outputs
-        and the number of CPUs used to run the simulation. It also takes a point
-        coordinates contained in a catchment of interest.
+        Initialization function which takes the folder path to Badlands outputs.
+        It also takes a point coordinates contained in a catchment of interest.
 
         Parameters
         ----------
         variable : folder
             Folder path to Badlands outputs.
-
-        variable: ncpus
-            Number of CPUs used to run the simulation.
 
         variable: ptXY
             X-Y coordinates of the point contained within the catchment.
@@ -83,7 +79,6 @@ class hydroGrid:
         if not os.path.isdir(folder):
             raise RuntimeError('The given folder cannot be found or the path is incomplete.')
 
-        self.ncpus = ncpus
         self.Z = None
         self.FA = None
         self.Chi = None
@@ -121,47 +116,35 @@ class hydroGrid:
 
         """
 
-        for i in range(0, self.ncpus):
+        df = h5py.File('%s/flow.time%s.hdf5'%(self.folder, timestep), 'r')
+        vertices = np.array((df['/coords']))
+        lbasin = np.array((df['/basin']))
+        lfacc = np.array((df['/discharge']))
+        lconnect = np.array((df['/connect']))
+        lchi = np.array((df['/chi']))
+        con1, con2 = np.hsplit(lconnect, 2)
+        conIDs = np.append(con1, con2)
+        IDs = np.unique(conIDs-1)
 
-            df = h5py.File('%s/flow.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
-            vertices = np.array((df['/coords']))
-            lbasin = np.array((df['/basin']))
-            lfacc = np.array((df['/discharge']))
-            lconnect = np.array((df['/connect']))
-            lchi = np.array((df['/chi']))
-            con1, con2 = np.hsplit(lconnect, 2)
-            conIDs = np.append(con1, con2)
-            IDs = np.unique(conIDs-1)
+        Xl = np.zeros((len(lconnect[:,0]),2))
+        Yl = np.zeros((len(lconnect[:,0]),2))
+        Xl[:,0] = vertices[lconnect[:,0]-1,0]
+        Xl[:,1] = vertices[lconnect[:,1]-1,0]
+        Yl[:,0] = vertices[lconnect[:,0]-1,1]
+        Yl[:,1] = vertices[lconnect[:,1]-1,1]
+        Zl = vertices[lconnect[:,1]-1,2]
+        FAl = lfacc[lconnect[:,0]-1]
+        Chil = lchi[lconnect[:,0]-1]
+        Basinl = lbasin[lconnect[:,0]-1]
 
-            Xl = np.zeros((len(lconnect[:,0]),2))
-            Yl = np.zeros((len(lconnect[:,0]),2))
-            Xl[:,0] = vertices[lconnect[:,0]-1,0]
-            Xl[:,1] = vertices[lconnect[:,1]-1,0]
-            Yl[:,0] = vertices[lconnect[:,0]-1,1]
-            Yl[:,1] = vertices[lconnect[:,1]-1,1]
-            Zl = vertices[lconnect[:,1]-1,2]
-            FAl = lfacc[lconnect[:,0]-1]
-            Chil = lchi[lconnect[:,0]-1]
-            Basinl = lbasin[lconnect[:,0]-1]
-
-            if i == 0:
-                X1 = Xl[:,0]
-                X2 = Xl[:,1]
-                Y1 = Yl[:,0]
-                Y2 = Yl[:,1]
-                Z = Zl
-                FA = FAl
-                Chi = Chil
-                Basin = Basinl
-            else:
-                X1 = np.append(X1, Xl[:,0])
-                X2 = np.append(X2, Xl[:,1])
-                Y1 = np.append(Y1, Yl[:,0])
-                Y2 = np.append(Y2, Yl[:,1])
-                Z = np.append(Z, Zl)
-                FA = np.append(FA, FAl)
-                Chi = np.append(Chi, Chil)
-                Basin = np.append(Basin, Basinl)
+        X1 = Xl[:,0]
+        X2 = Xl[:,1]
+        Y1 = Yl[:,0]
+        Y2 = Yl[:,1]
+        Z = Zl
+        FA = FAl
+        Chi = Chil
+        Basin = Basinl
 
         self.XY = np.column_stack((X1, Y1))
         if self.ptXY[0] < X1.min() or self.ptXY[0] > X1.max():
@@ -537,7 +520,7 @@ class hydroGrid:
 
     def viewNetwork(self, markerPlot = True, linePlot = False, lineWidth = 3, markerSize = 15, \
                    val = 'chi', width = 800, height = 400, colorMap = None, \
-                   colorScale = None, reverse = False, title = '<br>Stream network graph'):
+                   colorScale = None, title = '<br>Stream network graph'):
         """
         Visualise stream network.
 
@@ -571,9 +554,6 @@ class hydroGrid:
         variable: colorScale
             Color scale name for the marker.
 
-        variable: reverse
-            Boolean for reverse color scale.
-
         variable: title
             Title of the graph.
         """
@@ -599,9 +579,8 @@ class hydroGrid:
                     Scatter(
                         x=[self.donX[nn], self.rcvX[nn], None],
                         y=[self.donY[nn], self.rcvY[nn], None],
-                        line=Line(
+                        line=dict(
                             width=lineWidth,
-                            reversescale=reverse,
                             color = min(colorCS,key=lambda x: abs(float(x[0]) - valData[nn]/valmax))[1]
                         ),
                         hoverinfo='none',
@@ -614,7 +593,7 @@ class hydroGrid:
                     Scatter(
                         x=[self.donX[nn], self.rcvX[nn], None],
                         y=[self.donY[nn], self.rcvY[nn], None],
-                        line=Line(
+                        line=dict(
                             width=lineWidth,
                             color='#888'
                         ),
@@ -632,10 +611,9 @@ class hydroGrid:
                     mode='markers',
                     hoverinfo='text',
                     name=val,
-                    marker=Marker(
+                    marker=dict(
                         showscale=True,
                         colorscale=colorScale,
-                        reversescale=reverse,
                         color=valData,
                         size=markerSize,
                         colorbar=dict(
@@ -650,7 +628,7 @@ class hydroGrid:
                 )
              )
 
-        fig = Figure(data=Data(traces),
+        fig = Figure(data=traces,
                   layout=Layout(
                       title=title,
                       titlefont=dict(size=16),
@@ -658,8 +636,8 @@ class hydroGrid:
                       width=width,
                       height=height,
                       hovermode='closest',
-                      xaxis=XAxis(showgrid=True, zeroline=True, showticklabels=True),
-                      yaxis=YAxis(showgrid=True, zeroline=True, showticklabels=True)
+                      xaxis=dict(showgrid=True, zeroline=True, showticklabels=True),
+                      yaxis=dict(showgrid=True, zeroline=True, showticklabels=True)
                   )
             )
         plotly.offline.iplot(fig)
@@ -668,7 +646,7 @@ class hydroGrid:
 
     def viewStream(self, linePlot = False, lineWidth = 3, markerSize = 15, \
                    val = 'chi', width = 800, height = 400, colorMap = None, \
-                   colorScale = None, reverse = False, title = '<br>Main stream'):
+                   colorScale = None, title = '<br>Main stream'):
         """
         Visualise main stream.
 
@@ -698,9 +676,6 @@ class hydroGrid:
 
         variable: colorScale
             Color scale name for the marker.
-
-        variable: reverse
-            Boolean for reverse color scale.
 
         variable: title
             Title of the graph.
@@ -732,13 +707,11 @@ class hydroGrid:
                     Scatter(
                         x=[self.donX[nn], self.rcvX[nn], None],
                         y=[self.donY[nn], self.rcvY[nn], None],
-                        line=Line(
+                        line=dict(
                             width=lineWidth,
-                            reversescale=reverse,
                             color = min(colorCS,key=lambda x: abs(float(x[0]) - valData[nn]/valmax))[1]
                         ),
-                        hoverinfo='none',
-                        mode='lines'
+                        hoverinfo='none'
                     )
                 )
         else:
@@ -747,12 +720,11 @@ class hydroGrid:
                     Scatter(
                         x=[self.donX[nn], self.rcvX[nn], None],
                         y=[self.donY[nn], self.rcvY[nn], None],
-                        line=Line(
+                        line=dict(
                             width=lineWidth,
                             color='#888'
                         ),
-                        hoverinfo='none',
-                        mode='lines'
+                        hoverinfo='none'
                     )
                 )
 
@@ -764,10 +736,9 @@ class hydroGrid:
                 mode='markers',
                 hoverinfo='text',
                 name=val,
-                marker=Marker(
+                marker=dict(
                     showscale=True,
                     colorscale=colorScale,
-                    reversescale=reverse,
                     color=valStream,
                     size=markerSize,
                     colorbar=dict(
@@ -782,7 +753,7 @@ class hydroGrid:
             )
         )
 
-        fig = Figure(data=Data(traces),
+        fig = Figure(data=traces,
                   layout=Layout(
                       title=title,
                       titlefont=dict(size=16),
@@ -790,8 +761,8 @@ class hydroGrid:
                       width=width,
                       height=height,
                       hovermode='closest',
-                      xaxis=XAxis(showgrid=True, zeroline=True, showticklabels=True),
-                      yaxis=YAxis(showgrid=True, zeroline=True, showticklabels=True)
+                      xaxis=dict(showgrid=True, zeroline=True, showticklabels=True),
+                      yaxis=dict(showgrid=True, zeroline=True, showticklabels=True)
                   )
             )
         plotly.offline.iplot(fig)
@@ -868,7 +839,7 @@ class hydroGrid:
         else:
             raise RuntimeError('The requested Y value is unknown, options are: dist, chi, Fa, Z, Pe')
 
-        data = Data([
+        data = [
             Scatter(
                 x=xdata,
                 y=ydata,
@@ -891,7 +862,7 @@ class hydroGrid:
                     )
                 )
             )
-        ])
+        ]
 
         layout = dict(
             title=title,
@@ -1049,7 +1020,7 @@ class hydroGrid:
             yaxis=YAxis(showgrid=True, zeroline=True, showticklabels=True)
         )
 
-        fig = Figure(data=Data(traces), layout=layout)
+        fig = Figure(data=traces, layout=layout)
         plotly.offline.iplot(fig)
 
         return
@@ -1202,7 +1173,7 @@ class hydroGrid:
             yaxis=YAxis(showgrid=True, zeroline=True, showticklabels=True)
         )
 
-        fig = Figure(data=Data(traces), layout=layout)
+        fig = Figure(data=traces, layout=layout)
         plotly.offline.iplot(fig)
 
         return

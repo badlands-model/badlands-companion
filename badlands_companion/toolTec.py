@@ -21,8 +21,6 @@ from pylab import *
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import os, sys, datetime, string
-from mpl_toolkits.basemap import pyproj
-from mpl_toolkits.basemap import Basemap, shiftgrid
 
 import plotly
 from plotly.graph_objs import *
@@ -228,17 +226,17 @@ class toolTec:
         if dispmax == None:
             dispmax = self.dispi.max()
 
-        data = Data([ Surface( x=self.x, y=self.y, z=dispData, colorscale='Portland' ) ])
+        data = [ Surface( x=self.x, y=self.y, z=dispData, colorscale='Portland' ) ]
 
         layout = Layout(
             title='Export Grid',
             autosize=True,
             width=width,
             height=height,
-            scene=Scene(
-                zaxis=ZAxis(range=[dispmin, dispmax],autorange=False,nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2,zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
-                xaxis=XAxis(nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2,zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
-                yaxis=YAxis(nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2,zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
+            scene=dict(
+                zaxis=dict(range=[dispmin, dispmax],autorange=False,nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2,zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
+                xaxis=dict(nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2,zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
+                yaxis=dict(nticks=10,gridcolor='rgb(255, 255, 255)',gridwidth=2,zerolinecolor='rgb(255, 255, 255)',zerolinewidth=2),
                 bgcolor="rgb(244, 244, 248)"
             )
         )

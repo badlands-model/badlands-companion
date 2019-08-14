@@ -8,7 +8,9 @@ scipy>=1.2
 scikit-image>=0.15
 gFlex>=1.1.0
 matplotlib>=3.0
-plotly
+plotly==4.0.0
+scikit-fuzzy
 cmocean
 pyevtk
+netcdf4
 colorlover

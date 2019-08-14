@@ -107,7 +107,7 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
             mode='lines',
             name="layer "+str(i),
             line=dict(
-                shape='line',
+                shape='spline',
                 width = linesize-1,
                 color = colorrgb[i-1] #,
                 #dash = 'dash'
@@ -122,7 +122,7 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
         mode='lines',
         name="top",
         line=dict(
-            shape='line',
+            shape='spline',
             width = linesize,
             color = 'rgb(102, 102, 102)'
         )
@@ -136,7 +136,7 @@ def viewSections(width = 800, height = 400, cs = None, layNb = 2,
         mode='lines',
         name="base",
         line=dict(
-            shape='line',
+            shape='spline',
             width = linesize,
             color = 'rgb(102, 102, 102)'
         )
@@ -159,18 +159,15 @@ class simpleSection:
     Class for creating simple cross-sections from Badlands outputs.
     """
 
-    def __init__(self, folder=None, ncpus=1, bbox=None, dx=None):
+    def __init__(self, folder=None, bbox=None, dx=None):
         """
-        Initialization function which takes the folder path to Badlands outputs
-        and the number of CPUs used to run the simulation. It also takes the
-        bounding box and discretization value at which one wants to interpolate
-        the data.
+        Initialization function which takes the folder path to Badlands outputs. It also takes the
+        bounding box and discretization value at which one wants to interpolate the data.
+
         Parameters
         ----------
         variable : folder
             Folder path to Badlands outputs.
-        variable: ncpus
-            Number of CPUs used to run the simulation.
         variable: bbox
             Bounding box extent SW corner and NE corner.
         variable: dx
@@ -181,7 +178,6 @@ class simpleSection:
         if not os.path.isdir(folder):
             raise RuntimeError('The given folder cannot be found or the path is incomplete.')
 
-        self.ncpus = ncpus
         self.x = None
         self.y = None
         self.z = None
@@ -211,18 +207,11 @@ class simpleSection:
             Time step to load.
         """
 
-        for i in range(0, self.ncpus):
-            df = h5py.File('%s/tin.time%s.p%s.hdf5'%(self.folder, timestep, i), 'r')
-            coords = np.array((df['/coords']))
-            cumdiff = np.array((df['/cumdiff']))
-            if i == 0:
-                x, y, z = np.hsplit(coords, 3)
-                c = cumdiff
-            else:
-                c = np.append(c, cumdiff)
-                x = np.append(x, coords[:,0])
-                y = np.append(y, coords[:,1])
-                z = np.append(z, coords[:,2])
+        df = h5py.File('%s/tin.time%s.hdf5'%(self.folder, timestep), 'r')
+        coords = np.array((df['/coords']))
+        cumdiff = np.array((df['/cumdiff']))
+        x, y, z = np.hsplit(coords, 3)
+        c = cumdiff
 
         if self.bbox == None:
             self.nx = int((x.max() - x.min())/self.dx+1)
@@ -355,7 +344,7 @@ class simpleSection:
             mode='lines',
             name="'bottom'",
             line=dict(
-                shape='line',
+                shape='spline',
                 #color = color,
                 width = linesize
             ),
@@ -368,7 +357,7 @@ class simpleSection:
             mode='lines',
             name="'top'",
             line=dict(
-                shape='line',
+                shape='spline',
                 #color = color,
                 width = linesize
             ),
