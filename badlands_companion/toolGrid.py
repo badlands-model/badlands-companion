@@ -296,14 +296,15 @@ class toolGrid:
 
         if tfile == 'etopo1':
             #thredds = 'http://www.ngdc.noaa.gov/thredds/dodsC/relief/ETOPO1/thredds/ETOPO1_Bed_g_gmt4.nc'
-            thredds = 'http://dl.tpac.org.au/thredds/dodsC/bathymetry/ETOPO/etopo1/ETOPO1_Bed_g_gmt4.nc'
+            #thredds = 'http://dl.tpac.org.au/thredds/dodsC/bathymetry/ETOPO/etopo1/ETOPO1_Bed_g_gmt4.nc'
+            thredds = 'http://thredds.socib.es/thredds/dodsC/ancillary_data/bathymetry/ETOPO1_Bed_g_gmt4.nc'
             #thredds = 'http://opendap.deltares.nl/thredds/dodsC/opendap/deltares/delftdashboard/bathymetry/etopo1/etopo1.nc'
         else:
             raise RuntimeError('ETOPO1 is the only dataset available for now.')
 
         etopo = Dataset(thredds, 'r')
-        lons = etopo.variables["lon"][:]
-        lats = etopo.variables["lat"][:]
+        lons = etopo.variables["x"][:]
+        lats = etopo.variables["y"][:]
 
         res = self._get_indices(lons, lats)
 
