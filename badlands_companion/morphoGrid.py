@@ -91,20 +91,20 @@ class morphoGrid:
 
         """
 
-            df = h5py.File('%s/tin.time%s.hdf5'%(self.folder, timestep, i), 'r')
-            coords = np.array((df['/coords']))
-            cumdiff = np.array((df['/cumdiff']))
-            discharge = np.array((df['/discharge']))
-            if i == 0:
-                x, y, z = np.hsplit(coords, 3)
-                c = cumdiff
-                d = discharge
-            else:
-                c = np.append(c, cumdiff)
-                d = np.append(d, discharge)
-                x = np.append(x, coords[:,0])
-                y = np.append(y, coords[:,1])
-                z = np.append(z, coords[:,2])
+        df = h5py.File('%s/tin.time%s.hdf5'%(self.folder, timestep, i), 'r')
+        coords = np.array((df['/coords']))
+        cumdiff = np.array((df['/cumdiff']))
+        discharge = np.array((df['/discharge']))
+        if i == 0:
+            x, y, z = np.hsplit(coords, 3)
+            c = cumdiff
+            d = discharge
+        else:
+            c = np.append(c, cumdiff)
+            d = np.append(d, discharge)
+            x = np.append(x, coords[:,0])
+            y = np.append(y, coords[:,1])
+            z = np.append(z, coords[:,2])
 
         if self.bbox == None:
             self.nx = int((x.max() - x.min())/self.dx+1)
