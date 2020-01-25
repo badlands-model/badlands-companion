@@ -17,7 +17,7 @@ if __name__ == "__main__":
           author            = "Tristan Salles",
           author_email      = "tristan.salles@sydney.edu.au",
           url               = "https://github.com/badlands-model",
-          version           = "1.0.1",
+          version           = "1.0.2",
           description       = "Pre and post processing scripts for Badlands",
           long_description = long_description,
           long_description_content_type = "text/markdown",
