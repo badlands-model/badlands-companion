@@ -119,7 +119,7 @@ class toolSea:
         Po = float(periodExt[0])
         Pm = float(periodExt[1])
 
-        self.time = np.arange(to,tm,dt,dtype=np.float)
+        self.time = np.arange(to,tm,dt,dtype=np.float64)
 
         # Sea-level
         a0 = (sm - so)/(tm - to)

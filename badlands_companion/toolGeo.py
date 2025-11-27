@@ -61,8 +61,8 @@ class toolGeo:
             raise RuntimeError('Discretization space value is required.')
         self.dx = dx
 
-        self.x = np.arange(self.extentX[0],self.extentX[1],self.dx,dtype=np.float)
-        self.y = np.arange(self.extentY[0],self.extentY[1],self.dx,dtype=np.float)
+        self.x = np.arange(self.extentX[0],self.extentX[1],self.dx,dtype=np.float64)
+        self.y = np.arange(self.extentY[0],self.extentY[1],self.dx,dtype=np.float64)
 
         self.Xgrid, self.Ygrid = np.meshgrid(self.x, self.y)
         self.Z = None

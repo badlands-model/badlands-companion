@@ -27,7 +27,7 @@ if __name__ == "__main__":
           data_files=[('badlands_companion',sys_includes)],
           include_package_data = True,
           install_requires  = [
-                        'tribad',
+                        'triangle',
                         'numpy>=1.15.0',
                         'six>=1.11.0',
                         'setuptools>=38.4.0',
