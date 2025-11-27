@@ -452,7 +452,7 @@ class toolGrid:
         yscat = self.y.flatten()
         zscat = self.topo.flatten()
 
-        xgrid = np.arange(int(self.x.min()),int(self.x.max()),resolution,dtype=np.float)
+        xgrid = np.arange(int(self.x.min()),int(self.x.max()),resolution,dtype=np.float64)
         ygrid = np.arange(int(self.y.min()),int(self.y.max()),resolution)
         self.xi, self.yi = np.meshgrid(xgrid, ygrid)
 

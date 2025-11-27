@@ -58,8 +58,8 @@ class toolDynTopo:
         self.dx = dx
         self.dy = self.dx
 
-        self.x = np.arange(self.extentX[0],self.extentX[1]+self.dx,self.dx,dtype=np.float)
-        self.y = np.arange(self.extentY[0],self.extentY[1]+self.dx,self.dy,dtype=np.float)
+        self.x = np.arange(self.extentX[0],self.extentX[1]+self.dx,self.dx,dtype=np.float64)
+        self.y = np.arange(self.extentY[0],self.extentY[1]+self.dx,self.dy,dtype=np.float64)
 
         self.nx = None
         self.ny = None
